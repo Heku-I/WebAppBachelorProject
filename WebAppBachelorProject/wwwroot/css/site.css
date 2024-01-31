@@ -1,5 +1,6 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
+    font-family: 'Squada One', sans-serif; /* This one is according to the design. Maybe not for all the texts! */
 }
 
 @media (min-width: 768px) {
@@ -14,5 +15,7 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background: rgb(196,25,190);
+    background: radial-gradient(circle, rgba(196,25,190,1) 0%, rgba(38,40,221,1) 100%);
 }
