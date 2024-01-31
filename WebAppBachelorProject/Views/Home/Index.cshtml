@@ -2,7 +2,66 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap Drag and Drop Image Box</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Custom CSS -->
+    <style>
+        #drop-zone {
+            width: 500px;
+            height: 500px;
+            border: 2px dashed #ccc;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        #drop-zone img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="drop-zone" class="text-center" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" style="display: none;" onchange="displayImage(this)">
+        <p>Click or Drag & Drop an image here</p>
+    </div>
 </div>
+
+<!-- Bootstrap Scripts (Popper.js and Bootstrap JS) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    function displayImage(input) {
+        var file = input.files[0];
+
+        if (file && file.type.startsWith('image/')) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                var dropZone = document.getElementById('drop-zone');
+                dropZone.innerHTML = '<img src="' + e.target.result + '" alt="Uploaded Image">';
+            };
+
+            reader.readAsDataURL(file);
+        } else {
+            alert('Please choose a valid image file.');
+        }
+    }
+</script>
+
+</body>
+</html>
