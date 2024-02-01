@@ -1,215 +1,84 @@
 ﻿@page
 @model LoginModel
 
-
-
 @{
-
     ViewData["Title"] = "Login";
 }
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Squada One', sans-serif;
+        }
 
+        /* Adjust the width of the form inputs and round the corners */
+        .rounded-input {
+            width: 80%; /* Adjust the width as needed */
+            border-radius: 10px; /* Adjust the border-radius as needed */
+        }
 
-<div class="mainContainer">
+        /* Round the corners of buttons */
+        .rounded-button {
+            border-radius: 10px; /* Adjust the border-radius as needed */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <h1 class="text-center">Welcome back!</h1>
 
+                <form asp-page-handler="Login" method="post" class="needs-validation" novalidate>
+                    <p class="text-center">Please enter login details below</p>
 
-    <div class="row" id="loginSite">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <h1>Welcome back!</h1>
-
-        <div class="">
-
-            <form id="account" method="post">
-
-                <p id="enterLogInText">Please enter log in details below</p>
-
-
-
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-floating">
-                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="Email" />
-                    <label asp-for="Input.Email" class="form-label"></label>
-                    <span asp-validation-for="Input.Email" class="text-danger"></span>
-                </div>
-
-
-                <div class="form-floating">
-                    <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" />
-                    <label asp-for="Input.Password" class="form-label"></label>
-                    <span asp-validation-for="Input.Password" class="text-danger"></span>
-                </div>
-
-                <div>
-                    <div class="checkbox">
-                        <label asp-for="Input.RememberMe" class="form-label">
-                            <input class="form-check-input" asp-for="Input.RememberMe" />
-                            @Html.DisplayNameFor(m => m.Input.RememberMe)
-                        </label>
+                    <div class="mb-5 col-xs-4 rounded-pill">
+                        <label asp-for="Input.Email" class="form-label">Email</label>
+                        <input asp-for="Input.Email" class="form-control rounded-input" autocomplete="username" aria-required="true" required />
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
-                </div>
 
-                <p id ="forgotPassword">
-                    <a id="forgot-password" asp-page="./ForgotPassword">Forgot password?</a>
-                </p>
+                    <div class="mb-5 col-xs-4 rounded-pill">
+                        <label asp-for="Input.Password" class="form-label">Password</label>
+                        <input asp-for="Input.Password" type="password" class="form-control rounded-input" autocomplete="current-password" aria-required="true" required />
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
 
-                <div>
-                    <button id="login-submit" type="submit" class="">Sign in.</button>
-                </div>
-                <div>
+                    <div class="mb-3 form-check">
+                        <input class="form-check-input" asp-for="Input.RememberMe" />
+                        <label class="form-check-label" asp-for="Input.RememberMe">Remember me</label>
+                    </div>
 
+                    <p class="text-end">
+                        <a asp-page="./ForgotPassword" class="text-decoration-none">Forgot password?</a>
+                    </p>
+
+                    <div class="mb-3 text-center mt-5">
+                        <button type="submit" class="btn btn-dark btn-lg rounded-button">Sign in</button>
+                    </div>
 
                     <hr />
 
-                    <p >
-                        <button>
-                            <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Create a new account.</a>
+                    <div class="mb-3 text-center">
+                        <button type="button" class="btn btn-dark btn-lg rounded-button" onclick="location.href='./Register'">
+                            Create a new account
                         </button>
-                    </p>
-
-                    <!-----
-                    <p>
-                        <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a>
-                    </p>
-                    ----->
-                </div>
-            </form>
+                    </div>
+                </form>
+            </div>
         </div>
-
-
-
     </div>
 
-</div>
-
-<style>
-
-
-    .mainContainer {
-        display: flex;
-        justify-content: center;
-        color: white;
-    }
-
-    .mainContainer h1{
-        text-align: center;
-        font-size: 45px; 
-        margin-bottom: 1.5em;
-        margin-top: 0.5em; 
-    }
-
-    #forgotPassword {
-        text-align: end;
-        font-size: 15px;
-    }
-
-    #forgotPassword a {
-        text-decoration: none; 
-    }
-
-    .mainContainer p {
-            text-align: center;
-            font-size: 20px;
-    }
-
-
-    #enterLogInText {
-        padding-bottom: 1em;
-
-    }
-
-
-    body {
-        /*  background: rgb(196,25,190);
-            background: radial-gradient(circle, rgba(196,25,190,1) 0%, rgba(38,40,221,1) 100%);
-            */
-        font-family: 'Squada One', sans-serif;
-    }
-
-    /* Styling the main container for the form */
-    #loginSite {
-        padding: 2rem;
-        width: 600px; /* Adjust width */
-    }
-
-
-    #account {
-        display: flex;
-        flex-direction: column;
-    }
-
-        #account p {
-            margin: 0.5rem 0;
-        }
-
-    .form-control {
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border: none;
-        border-radius: 20px;
-        box-shadow: 0px 6px 4px 0px rgba(0, 0, 0, 0.25);
-    }
-    /*
-        .form-floating > label {
-            display: block;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            margin-left: 1rem;
-            margin-top: -0.5rem;
-            color: white;
-            pointer-events: none;
-            }*/
-
-    button {
-        width: 100%;
-        padding: 1rem;
-        border: none;
-        border-radius: 20px;
-        margin-top: 1rem;
-        background-color: black;
-        color: white;
-        cursor: pointer;
-        box-shadow: 0px 6px 4px 0px rgba(0, 0, 0, 0.25);
-    }
-
-        button:hover {
-            background-color: #0B0B0B;
-        }
-
-
-    a {
-        color: #fff;
-        text-decoration: none;
-    }
-
-        a:hover {
-            color: #fff;
-        }
-
-
-    #forgot-password {
-        color: #fff;
-    }
-
-    .checkbox label {
-        display: block;
-        margin-top: 0.5rem;
-    }
-
-
-    .form-check-input {
-        margin-right: 0.5rem;
-    }
-
-    hr {
-        color: #fff; 
-        background: #fff; 
-        margin-top: 3.5em;
-        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-        height: 1px; 
-    }
-
-</style>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>
