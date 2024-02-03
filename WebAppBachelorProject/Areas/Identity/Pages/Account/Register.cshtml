@@ -13,7 +13,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
-    
+
 </head>
 <body class="bg-light">
 <div class="container d-flex align-items-center min-vh-100">
@@ -51,30 +51,34 @@
 <section class="mt-4 text-center">
     <h3>Use another service to register.</h3>
     <hr />
-    @{
-        if ((Model.ExternalLogins?.Count ?? 0) == 0)
-        {
-            <div>
-                <p>
-                    There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                    about setting up this ASP.NET application to support logging in via external services</a>.
-                </p>
-            </div>
+        @{
+            if ((Model.ExternalLogins?.Count ?? 0) == 0)
+
+            {
+                    <div>
+                        <p>
+                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
+                            about setting up this ASP.NET application to support logging in via external services</a>.
+                        </p>
+                    </div>
+            }
+
+            else
+
+            {
+                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                        <div>
+                            <p>
+                            @foreach (var provider in Model.ExternalLogins!)
+
+                            {
+                                        <button id=registerSubmit type="submit" class="btn btn-dark" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                            }
+                            </p>
+                        </div>
+                    </form>
+            }
         }
-        else
-        {
-            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                <div>
-                    <p>
-                        @foreach (var provider in Model.ExternalLogins!)
-                        {
-                            <button id=registerSubmit type="submit" class="btn btn-dark" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                        }
-                    </p>
-                </div>
-            </form>
-        }
-    }
 </section>
 
 

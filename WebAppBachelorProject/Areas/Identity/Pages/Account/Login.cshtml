@@ -7,6 +7,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,16 +20,20 @@
 
         /* Adjust the width of the form inputs and round the corners */
         .rounded-input {
-            width: 80%; /* Adjust the width as needed */
-            border-radius: 10px; /* Adjust the border-radius as needed */
+            width: 80%;
+            /* Adjust the width as needed */
+            border-radius: 10px;
+            /* Adjust the border-radius as needed */
         }
 
         /* Round the corners of buttons */
         .rounded-button {
-            border-radius: 10px; /* Adjust the border-radius as needed */
+            border-radius: 10px;
+            /* Adjust the border-radius as needed */
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="row justify-content-center mt-5">
@@ -42,13 +47,15 @@
 
                     <div class="mb-5 col-xs-4 rounded-pill">
                         <label asp-for="Input.Email" class="form-label">Email</label>
-                        <input asp-for="Input.Email" class="form-control rounded-input" autocomplete="username" aria-required="true" required />
+                        <input asp-for="Input.Email" class="form-control rounded-input" autocomplete="username"
+                            aria-required="true" required />
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
 
                     <div class="mb-5 col-xs-4 rounded-pill">
                         <label asp-for="Input.Password" class="form-label">Password</label>
-                        <input asp-for="Input.Password" type="password" class="form-control rounded-input" autocomplete="current-password" aria-required="true" required />
+                        <input asp-for="Input.Password" type="password" class="form-control rounded-input"
+                            autocomplete="current-password" aria-required="true" required />
                         <span asp-validation-for="Input.Password" class="text-danger"></span>
                     </div>
 
@@ -68,7 +75,8 @@
                     <hr />
 
                     <div class="mb-3 text-center">
-                        <button type="button" class="btn btn-dark btn-lg rounded-button" onclick="location.href='./Register'">
+                        <button type="button" class="btn btn-dark btn-lg rounded-button"
+                            onclick="location.href='./Register'">
                             Create a new account
                         </button>
                     </div>
@@ -81,4 +89,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 </body>
+
 </html>
