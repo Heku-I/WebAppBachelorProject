@@ -4,101 +4,135 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>title</title>
 
-<style>body { font-family: 'Squada One', sans-serif;}</style>
+
+    <style>
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+            .card:hover {
+                transform: translateY(-10px);
+            }
+    </style>
 </head>
+
 <body>
-    <h2 class="text-center text-white mt-5">Generate a subjective description of any image with AI</h2>
-    <h1 class="text-center text-white mt-2">Try it yourself!</h1>
-
-<div class="container mt-5 w-50  ">
-    <div id="drop-area" class="card text-center shadow-lg p-3 mb bg-dark rounded-3 text-light display-6">
-        <p class="mb-5">Drag and drop an image file here or click to select one.</p>
-        <input type="file" id="file-input" accept="image/*" style="display: none;" />
-        <div id="preview"></div>
+    <span class="d-flex" id="skew-bg"> </span>
+    <!--content-->
+    <div class="content">
+    <div class="text text-dark mt-5">
+        <h1 class="display-3" style="font-weight: 900">Welcome
+        <small class="mb-4 display-5" style="font-weight: 500">
+            to ImGen.
+            <br>
+            Generate a description of any image with AI.
+        </small>
+        </h1>
     </div>
-</div>
 
-@section scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var dropArea = document.getElementById("drop-area");
-            var fileInput = document.getElementById("file-input");
-            var preview = document.getElementById("preview");
+    <div class="container mt-5 w-50  ">
+        <div id="drop-area" class="card rounded-5 text-center  bg-dark  text-light display-6">
+            <p class="text-center">
+                Drag and drop an image file here
+                <br>
+                or click to select one.
+            </p>
+            <input type="file" id="file-input" accept="image/*" style="display: none;" />
+            <div id="preview"></div>
+        </div>
+    </div>
+    </div>
+    <!--end of content-->
+    @section scripts {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var dropArea = document.getElementById("drop-area");
+                var fileInput = document.getElementById("file-input");
+                var preview = document.getElementById("preview");
 
-            dropArea.addEventListener("dragover", function (e) {
-                e.preventDefault();
-                dropArea.classList.add("border", "border-secondary");
-            });
+                dropArea.addEventListener("dragover", function (e) {
+                    e.preventDefault();
+                    dropArea.classList.add("border", "border-secondary");
+                });
 
-            dropArea.addEventListener("dragleave", function () {
-                dropArea.classList.remove("border", "border-secondary");
-            });
+                dropArea.addEventListener("dragleave", function () {
+                    dropArea.classList.remove("border", "border-secondary");
+                });
 
-            dropArea.addEventListener("drop", function (e) {
-                e.preventDefault();
-                dropArea.classList.remove("border", "border-secondary");
+                dropArea.addEventListener("drop", function (e) {
+                    e.preventDefault();
+                    dropArea.classList.remove("border", "border-secondary");
 
-                var files = e.dataTransfer.files;
+                    var files = e.dataTransfer.files;
 
-                if (files.length > 0) {
-                    fileInput.files = files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        previewImage();
+                    }
+                });
+
+                fileInput.addEventListener("change", function () {
                     previewImage();
+                });
+
+                function previewImage() {
+                    var file = fileInput.files[0];
+
+                    if (file) {
+                        var reader = new FileReader();
+
+                        reader.onload = function (e) {
+                            preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="img-fluid rounded" />';
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
                 }
+
+                dropArea.addEventListener("click", function () {
+                    fileInput.click();
+                });
+
+                fileInput.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                });
             });
+        </script>
+    }
 
-            fileInput.addEventListener("change", function () {
-                previewImage();
-            });
-
-            function previewImage() {
-                var file = fileInput.files[0];
-
-                if (file) {
-                    var reader = new FileReader();
-
-                    reader.onload = function (e) {
-                        preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="img-fluid rounded" />';
-                    };
-
-                    reader.readAsDataURL(file);
-                }
-            }
-
-            dropArea.addEventListener("click", function () {
-                fileInput.click();
-            });
-
-            fileInput.addEventListener("click", function (e) {
-                e.stopPropagation();
-            });
-        });
-    </script>
-}
-
-<h1 class="text-center text-white mt-5">Here is some examples</h1>
-   <section id="images">
-        @if (Model != null && Model.Any())
-        {
-            @foreach (var item in Model)
+    <section class="container mt-5">
+        <h1 class="text-center text-dark">Here are some examples.</h1>
+        <div class="d-flex justify-content-between mt-4">
+            @if (Model != null && Model.Any())
             {
-                <div class="images">
-                    <img src="@item.image" alt="images">
-                    <p class="image-title">@item.Title</p>
-                    <p class="image-description">@item.Descriptions</p>
-                    
-                    <a asp-action="Gallery" asp-controller="Image" asp-route-id="@item.ImageId"> More</a>
-                </div>
+                @foreach (var item in Model.Take(6)) // Displaying only the first 6 items
+                {
+                    <img src="../wwwroot/Images/Background1.jpg" class="img-fluid rounded" alt="Card Image">
+                    <img src="" class="img-fluid rounded" alt="Card Image">
+                }
             }
-        }
-        else
-        {
-            <h2 class="text-white text-center mt-5">No images to show.</h2>
-        }
+            else
+            {
+                @for (int i = 0; i < 6; i++)
+                {
+                    <img src="../wwwroot/Images/Background1.jpg" class="img-fluid rounded" alt="Card Image">
+                }
+            }
+        </div>
     </section>
+
+
+
+
 </body>
+
 </html>

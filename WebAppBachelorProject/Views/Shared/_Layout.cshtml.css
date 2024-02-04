@@ -2,12 +2,25 @@
 for details on configuring this project to bundle and minify static web assets. */
 
 
-body {
-    background: rgb(196,25,190);
-    background: radial-gradient(circle, rgba(196,25,190,1) 0%, rgba(38,40,221,1) 100%);
-    font-family: 'Squada One', sans-serif; /* Maybe not use the same font-type for all the text. */
+
+h1 {
+    font-family: "Inter", sans-serif;
 }
 
+h2 {
+    font-family: "Inter", sans-serif;
+}
+
+p {
+    font-family: "Inter", sans-serif;
+}
+
+.navbar {
+    font-family: "Inter", sans-serif;
+    font-size: 1.3em;
+}
+
+}
 a.navbar-brand {
   white-space: normal;
   text-align: center;
