@@ -10,18 +10,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>title</title>
 
-
     <style>
+        body {
+            overflow-y: scroll;
+        }
+
+        /* Custom CSS to hide card background and show description on hover */
         .card {
-            border-radius: 15px;
-            overflow: hidden;
+            border-radius: 20px;
+            border: none;
+            transition: transform 0.3s ease-in-out;
             margin-bottom: 20px;
-            transition: transform 0.2s ease-in-out;
         }
 
             .card:hover {
                 transform: translateY(-10px);
             }
+
+        .card-img-top {
+            object-fit: cover;
+            max-height: 200px;
+            border-radius:15px;
+        }
+
+        .card-body {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .card:hover .card-body {
+            opacity: 1;
+        }
+
+        .dark-container {
+            background-color: #08090A; /* Dark background color */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            max-height: 350px;
+            border-radius: 20px; /* Add border-radius for rounded corners */
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
@@ -29,29 +59,95 @@
     <span class="d-flex" id="skew-bg"> </span>
     <!--content-->
     <div class="content">
-    <div class="text text-dark mt-5">
-        <h1 class="display-3" style="font-weight: 900">Welcome
-        <small class="mb-4 display-5" style="font-weight: 500">
-            to ImGen.
-            <br>
-            Generate a description of any image with AI.
-        </small>
-        </h1>
-    </div>
+        <div class="text text-dark mt-5">
+            <h1 class="display-3" style="font-weight: 900">
+                Welcome
+                <small class="mb-4 display-5" style="font-weight: 500">
+                    to ImGen.
+                    <br>
+                    Generate a description of any image with AI.
+                </small>
+            </h1>
+        </div>
 
-    <div class="container mt-5 w-50  ">
-        <div id="drop-area" class="card rounded-5 text-center  bg-dark  text-light display-6">
-            <p class="text-center">
-                Drag and drop an image file here
-                <br>
-                or click to select one.
-            </p>
-            <input type="file" id="file-input" accept="image/*" style="display: none;" />
-            <div id="preview"></div>
+        <div class="container mt-5 w-50">
+            <div id="drop-area" class="dark-container h2">
+                <p>
+                    Drag and drop
+                    <br>
+                    an image file here
+                    <br>
+                    or click to select one.
+                </p>
+                <input type="file" id="file-input" accept="image/*" style="display: none;" />
+                <div id="preview"></div>
+            </div>
+        </div>
+        </div>
+
+    <!--end of content-->
+
+    <div class="container mt-5">
+        <h2>Examples</h2>
+        <div class="row">
+          
+            <div class="col-md-2 mb-3 mt-5">
+                <div class="card">
+                    <img src="./Images/istockphoto-1457639493-612x612.jpg" class="card-img-top" alt="Image 1">
+                    <div class="card-body">
+                        <p class="card-text description">One pink and two yellow icecream with sprinkles.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4 mt-5">
+                <div class="card">
+                    <img src="./Images/forest-1400475.webp" class="card-img-top" alt="Image 1">
+                    <div class="card-body">
+                       
+                        <p class="card-text description">Green forest with tall trees.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2 mt-5">
+                <div class="card">
+                    <img  src="./Images/argynnis-adippe-2-1374489.webp" class="card-img-top" alt="Image 1">
+                    <div class="card-body">
+                        <p class="card-text description">Yellow butterfly with patterns.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2 mt-5">
+                <div class="card">
+                    <img src="./Images/parrot.webp" class="card-img-top" alt="Image 1">
+                    <div class="card-body">
+                       
+                        <p class="card-text description">Colorful parrot with yellow and blue feathers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2 mt-5">
+                <div class="card">
+                    <img  src="./Images/butterfly.webp" class="card-img-top" alt="Image 1">
+                    <div class="card-body">
+                        
+                        <p class="card-text description">Small butterfly on orange flowers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2 mt-5">
+                <div class="card">
+                    <img  src="./Images/jelly.webp" class="card-img-top" alt="Image 1">
+                    <div class="card-body">
+                       
+                        <p class="card-text description">Multiple orange jellyfish.</p>
+                    </div>
+                </div>
+            </div>
+        
         </div>
     </div>
-    </div>
-    <!--end of content-->
+
+
     @section scripts {
         <script>
             document.addEventListener("DOMContentLoaded", function () {
@@ -108,30 +204,6 @@
             });
         </script>
     }
-
-    <section class="container mt-5">
-        <h1 class="text-center text-dark">Here are some examples.</h1>
-        <div class="d-flex justify-content-between mt-4">
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var item in Model.Take(6)) // Displaying only the first 6 items
-                {
-                    <img src="../wwwroot/Images/Background1.jpg" class="img-fluid rounded" alt="Card Image">
-                    <img src="" class="img-fluid rounded" alt="Card Image">
-                }
-            }
-            else
-            {
-                @for (int i = 0; i < 6; i++)
-                {
-                    <img src="../wwwroot/Images/Background1.jpg" class="img-fluid rounded" alt="Card Image">
-                }
-            }
-        </div>
-    </section>
-
-
-
 
 </body>
 

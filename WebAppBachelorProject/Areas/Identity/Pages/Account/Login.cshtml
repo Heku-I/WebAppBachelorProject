@@ -30,15 +30,11 @@
             
         }
 
-        /* Adjust the width of the form inputs and round the corners */
         .rounded-input {
             width: 80%;
-            /* Adjust the width as needed */
             border-radius: 40px;
 
         }
-
-        /* Round the corners of buttons */
         .rounded-button {
             border-radius: 40px;
             width: 80%;
@@ -61,21 +57,27 @@
         <div class="row justify-content-center mt-5">
             <div class="col-md-6">
 
-                <h1 class="text-center display-3" style="font-weight:500;">Welcome back!</h1>
+                <h1 class="display-3" style="font-weight: 900">
+                    Welcome
+                    <small class="mb-4 display-5" style="font-weight: 500">
+                        back
+                        <br>
+                        Enter login details
+                    </small>
+                </h1>
 
                 <form asp-page-handler="Login" method="post" class="needs-validation" novalidate>
-                    <p class="text-center">Please enter login details below</p>
 
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                    <div class="mb-5 col-xs-4 rounded-pill">
+                    <div class="mb-5 col-xs-4 rounded-pill form-control-lg">
                         <label asp-for="Input.Email" class="form-label">Email</label>
                         <input asp-for="Input.Email" class="form-control rounded-input" autocomplete="username"
                             aria-required="true" required />
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
 
-                    <div class="mb-5 col-xs-4 rounded-pill">
+                    <div class="mb-5 col-xs-4 rounded form-control-lg">
                         <label asp-for="Input.Password" class="form-label">Password</label>
                         <input asp-for="Input.Password" type="password" class="form-control rounded-input"
                             autocomplete="current-password" aria-required="true" required />
