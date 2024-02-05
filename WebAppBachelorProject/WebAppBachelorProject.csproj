@@ -22,4 +22,10 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Views\Gallary\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\Gallary\" />
+  </ItemGroup>
 </Project>
