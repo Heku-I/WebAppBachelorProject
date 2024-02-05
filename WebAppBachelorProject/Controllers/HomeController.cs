@@ -29,11 +29,6 @@ namespace WebAppBachelorProject.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-
-        /*
-         * 
-         * Heku: This should not be done in HomeController. It must be done in the ImageController. 
-
         [HttpPost]
         public IActionResult Upload(IFormFile file)
         {
@@ -54,7 +49,5 @@ namespace WebAppBachelorProject.Controllers
 
             return Json(new { success = false, message = "Invalid file!" });
         }
-
-        */
     }
 }

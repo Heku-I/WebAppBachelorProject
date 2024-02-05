@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using WebAppBachelorProject.Models;
 
 namespace WebAppBachelorProject.Data
 {
@@ -11,6 +10,5 @@ namespace WebAppBachelorProject.Data
         {
             Database.EnsureCreated(); 
         }
-        public DbSet<WebAppBachelorProject.Models.Image>? Image { get; set; }
     }
 }
