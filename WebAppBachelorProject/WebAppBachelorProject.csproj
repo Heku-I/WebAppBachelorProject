@@ -25,7 +25,4 @@
   <ItemGroup>
     <None Remove="Views\Gallary\" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Gallary\" />
-  </ItemGroup>
 </Project>
