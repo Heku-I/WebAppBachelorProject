@@ -39,6 +39,7 @@ namespace WebAppBachelorProject.Controllers
         {
             if (file != null && file.Length > 0)
             {
+
                 var fileName = Path.GetFileName(file.FileName);
                 var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", fileName);
 

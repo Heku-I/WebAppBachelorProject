@@ -4,6 +4,15 @@ namespace WebAppBachelorProject.Controllers
 {
     public class ImageController : Controller
     {
+
+        private readonly ILogger<ImageController> _logger;
+
+
+        public ImageController(ILogger<ImageController> logger)
+        {
+            _logger = logger;
+        }
+
         public IActionResult Generate()
         {
             return View();
@@ -20,7 +29,7 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-            string imageId = Guid.NewGuid().ToString(); // Generate a unique ID for the image
+            string imageId = Guid.NewGuid().ToString(); 
             var tempFilePath = Path.Combine(Path.GetTempPath(), imageId + Path.GetExtension(file.FileName));
 
             try
@@ -31,8 +40,6 @@ namespace WebAppBachelorProject.Controllers
                     await file.CopyToAsync(stream);
                 }
 
-
-                // Return success response with imageId or a path that can be used to access the image for preview
                 return Json(new { success = true, imageId = imageId });
             }
             catch (Exception ex)
@@ -42,5 +49,27 @@ namespace WebAppBachelorProject.Controllers
             }
         }
 
+
+
+
+
+        // Additional method to retrieve the image for preview, if storing path in session or cache
+        public IActionResult GetImagePreview(string imageId)
+        {
+
+            var filePath = Path.Combine(Path.GetTempPath(), imageId);
+
+            _logger.LogInformation("Filepath is " + filePath); 
+
+            if (System.IO.File.Exists(filePath))
+            {
+                var mimeType = "image/jpeg"; // Set appropriately based on the file type
+                return PhysicalFile(filePath, mimeType);
+            }
+
+            return NotFound("Image not found.");
+        }
     }
+
 }
+

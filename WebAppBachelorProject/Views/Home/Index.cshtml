@@ -80,20 +80,20 @@
                     or click to select one.
                 </p>
                 <input type="file" id="file-input" accept="image/*" style="display: none;" />
-                <div id="preview"></div>
+               
             </div>
+            <div id="preview"></div>
         </div>
     </div>
 
     <!--end of content-->
 
-    <div class="container mt-5">
-        <h2>Examples</h2>
+    <div class="container mt-5" id="exampleCards">
         <div class="row">
 
             <div class="col-md-2 mb-3 mt-5">
                 <div class="card">
-                    <img src="./Images/istockphoto-1457639493-612x612.jpg" class="card-img-top" alt="Image 1">
+                    <img src="./Images/istockphoto-1457639493-612x612.jpg" class="card-img-top" alt="One pink and two yellow icecream with sprinkles.1">
                     <div class="card-body">
                         <p class="card-text description">One pink and two yellow icecream with sprinkles.</p>
                     </div>
@@ -101,7 +101,7 @@
             </div>
             <div class="col-md-2 mb-4 mt-5">
                 <div class="card">
-                    <img src="./Images/forest-1400475.webp" class="card-img-top" alt="Image 1">
+                    <img src="./Images/forest-1400475.webp" class="card-img-top" alt="Green forest with tall trees">
                     <div class="card-body">
 
                         <p class="card-text description">Green forest with tall trees.</p>
@@ -110,7 +110,7 @@
             </div>
             <div class="col-md-2 mb-2 mt-5">
                 <div class="card">
-                    <img src="./Images/argynnis-adippe-2-1374489.webp" class="card-img-top" alt="Image 1">
+                    <img src="./Images/argynnis-adippe-2-1374489.webp" class="card-img-top" alt="Yellow butterfly with patterns">
                     <div class="card-body">
                         <p class="card-text description">Yellow butterfly with patterns.</p>
                     </div>
@@ -118,7 +118,7 @@
             </div>
             <div class="col-md-2 mb-2 mt-5">
                 <div class="card">
-                    <img src="./Images/parrot.webp" class="card-img-top" alt="Image 1">
+                    <img src="./Images/parrot.webp" class="card-img-top" alt="Colorful parrot with yellow and blue feathers">
                     <div class="card-body">
 
                         <p class="card-text description">Colorful parrot with yellow and blue feathers.</p>
@@ -127,7 +127,7 @@
             </div>
             <div class="col-md-2 mb-2 mt-5">
                 <div class="card">
-                    <img src="./Images/butterfly.webp" class="card-img-top" alt="Image 1">
+                    <img src="./Images/butterfly.webp" class="card-img-top" alt="Small butterfly on orange flowers">
                     <div class="card-body">
 
                         <p class="card-text description">Small butterfly on orange flowers.</p>
@@ -136,7 +136,7 @@
             </div>
             <div class="col-md-2 mb-2 mt-5">
                 <div class="card">
-                    <img src="./Images/jelly.webp" class="card-img-top" alt="Image 1">
+                    <img src="./Images/jelly.webp" class="card-img-top" alt="Multiple orange jellyfish">
                     <div class="card-body">
 
                         <p class="card-text description">Multiple orange jellyfish.</p>
@@ -152,33 +152,17 @@
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 var dropArea = document.getElementById("drop-area");
-                var fileInput = document.getElementById("file-input");
-                //var preview = document.getElementById("preview");
+               var fileInput = document.getElementById("file-input");
+                var preview = document.getElementById("preview");
 
-
+              
                 fileInput.addEventListener("change", function () {
 
-                    var formData = new FormData();
-                    formData.append('file', fileInput.files[0]);
-
-                    fetch('/Image/Preview', {
-                        method: 'POST',
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-
-
-                                alert('Redirecting to another page!'); //TEMP FOR DEBUGGING!
-
-                                window.location.href = '/Generate?imageId=' + data.imageId;
-                            } else {
-                                alert('Something went wrong');
-                            }
-                        });
+                    previewImage(); 
+ 
 
                 });
+             
 
 
                 //I think we need sources for this code:
@@ -200,7 +184,7 @@
 
                     if (files.length > 0) {
                         fileInput.files = files;
-                        // previewImage();
+                         previewImage();
                     }
                 });
 
@@ -215,11 +199,6 @@
                 });
 
 
-
-                /*
-                Heku: This should be in Generate page (I will remove and fix)
-
-
                 function previewImage() {
                 var file = fileInput.files[0];
 
@@ -227,14 +206,17 @@
                 var reader = new FileReader();
 
                 reader.onload = function (e) {
-                preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="img-fluid rounded" />';
+
+                    preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="img-fluid rounded" />';
+                    dropArea.hidden = true;
+                    document.getElementById("exampleCards").hidden = true; 
                 };
 
                 reader.readAsDataURL(file);
                 }
                 }
 
-                */
+                
 
             });
         </script>
