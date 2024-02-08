@@ -1,0 +1,38 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+
+<span class="d-flex" id="skew-bg"> </span>
+<div class="container mt-5">
+    <h1 class="display-3" style="font-weight: 900">
+        Browse
+        <small class="mb-4 display-5" style="font-weight: 500">
+            your image
+            <br>
+            gallery!
+        </small>
+    </h1>
+</div>
+
+<div class="container mt-5">
+    <section id="search-section" class="text-center mt-5" style="margin-top:20px;">
+        @using (Html.BeginForm("Gallery", "Gallery", FormMethod.Post, new { @class = "form-inline" }))
+        {
+            <div class="row justify-content-center">
+                <div class="col-sm-4">
+                    <div class="input-group">
+                        @Html.TextBox("SearchString", null, new { @class = "form-control", placeholder = "Search..." })
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-dark btn-lg">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </section>
+
+</div>
+

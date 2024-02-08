@@ -29,7 +29,7 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-            string imageId = Guid.NewGuid().ToString(); 
+            string imageId = Guid.NewGuid().ToString();
             var tempFilePath = Path.Combine(Path.GetTempPath(), imageId + Path.GetExtension(file.FileName));
 
             try
@@ -59,7 +59,7 @@ namespace WebAppBachelorProject.Controllers
 
             var filePath = Path.Combine(Path.GetTempPath(), imageId);
 
-            _logger.LogInformation("Filepath is " + filePath); 
+            _logger.LogInformation("Filepath is " + filePath);
 
             if (System.IO.File.Exists(filePath))
             {
