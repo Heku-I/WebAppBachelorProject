@@ -83,6 +83,7 @@
                
             </div>
             <div id="preview"></div>
+            <div id="GenerateButtons"></div>
         </div>
     </div>
 
@@ -207,14 +208,33 @@
 
                 reader.onload = function (e) {
 
+
+                    //The following happens when the image is in preview-mode.
+
                     preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="img-fluid rounded" />';
                     dropArea.hidden = true;
                     document.getElementById("exampleCards").hidden = true; 
+                    createButton(); 
                 };
 
                 reader.readAsDataURL(file);
                 }
+
                 }
+
+
+                
+                // A function to show the buttons when image is in preview-mode. 
+                function createButton() {
+
+                    var generateButton = document.getElementById("GenerateButtons");
+
+                    //Need to change styling on the button. 
+                    //The form/button will trigger event in server. 
+                    generateButton.innerHTML = '<form action="/Image/GenerateDescription" method="post"> <button type="submit">Generate Description</button> </form>';
+                }
+
+
 
                 
 

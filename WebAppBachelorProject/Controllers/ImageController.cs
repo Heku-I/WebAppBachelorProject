@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Policy;
 
 namespace WebAppBachelorProject.Controllers
 {
@@ -13,62 +14,117 @@ namespace WebAppBachelorProject.Controllers
             _logger = logger;
         }
 
-        public IActionResult Generate()
+
+
+
+        /// <summary>
+        ///  This will be the function to send the image the Docker, machine learning.
+        ///  It starts when "Generate Description" button is clicked in preview-mode. 
+        /// </summary>
+        /// <returns>The generated description from ML algorithm</returns>
+        public async Task<IActionResult> GenerateDescription()
         {
-            return View();
+
+            _logger.LogInformation("ImageController: GenerateDescription has been called."); //Debug line. 
+
+             GenerateEvaluation(); //Temp; 
+
+            return NotFound("Temporarily"); //Temp; 
+
+            //Need to send the image to Docker. 
+
+            //Retrieve a description from docker
+
+            //Display the description on the page. 
+
+            //Trigger another function called GenerateEvaluation()
+           
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> Preview(IFormFile file)
+        /// <summary>
+        /// <summary>
+        /// This function will be called from the GenerateDescription() (or maybe something else in the future). 
+        /// It will generate the evaluation. 
+        /// </summary>
+        /// <returns>Return the evaluation from the description</returns>
+        public async Task<IActionResult> GenerateEvaluation()
         {
-            if (file == null || file.Length == 0)
-            {
-                return Json(new { success = false, message = "No file uploaded." });
-            }
+            _logger.LogInformation("ImageController: GenerateEvaluation has been called.");
 
+            //Need to get the description from page.
+            //Need to get the image. 
+            
+            //Need to send the image to docker ML to get the evaluation.
+            //Need to retrieve the evaluation. 
+            //Need to display the evaluation on page. 
 
-
-            string imageId = Guid.NewGuid().ToString();
-            var tempFilePath = Path.Combine(Path.GetTempPath(), imageId + Path.GetExtension(file.FileName));
-
-            try
-            {
-                // Save the file temporarily
-                using (var stream = new FileStream(tempFilePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                return Json(new { success = true, imageId = imageId });
-            }
-            catch (Exception ex)
-            {
-                // Log the exception
-                return Json(new { success = false, message = $"Error uploading image: {ex.Message}" });
-            }
+            return NotFound("Temporarily"); //temp. 
         }
 
 
 
-
-
-        // Additional method to retrieve the image for preview, if storing path in session or cache
-        public IActionResult GetImagePreview(string imageId)
+        /// <summary>
+        /// Saving image to a folder.
+        /// </summary>
+        /// <returns>The folder path</returns>
+        public async Task<IActionResult> SaveImage()
         {
+            _logger.LogInformation("ImageController: SaveImage has been called.");
 
-            var filePath = Path.Combine(Path.GetTempPath(), imageId);
+            //Need to save image to a local folder somewhere. At this point, not sure where. 
 
-            _logger.LogInformation("Filepath is " + filePath);
+            //Returns folderPath
+           
 
-            if (System.IO.File.Exists(filePath))
-            {
-                var mimeType = "image/jpeg"; // Set appropriately based on the file type
-                return PhysicalFile(filePath, mimeType);
-            }
-
-            return NotFound("Image not found.");
+            return NotFound("SaveImageTemp");
         }
+
+
+
+        //    !!!!!!!!!!!!!!!!!!!!!!!!        Maybe also a function(s) to encrypt and decrypt the images??         !!!!!!!!!!!!!!!!!!!!!!!! 
+
+
+
+        /// <summary>
+        /// Creates a record in the Database > Image table.
+        /// </summary>
+        /// <returns>Success or false</returns>
+        public async Task<IActionResult> ImageToDB()
+        {
+            _logger.LogInformation("ImageController: ImageToDB has been called.");
+
+            //Need to create the valid output.
+
+            //Send to DAL (Image Repository)
+
+            //Retrieve success or false.
+            //Return success or galse.
+
+
+            return NotFound("ImageToDbTemp");
+        }
+
+
+        /// <summary>
+        /// Deletes a image from the DB
+        /// </summary>
+        /// <returns>success or false</returns>
+        public async Task<IActionResult> DeleteImage()
+        {
+            _logger.LogInformation("ImageController: DeleteImage has been called.");
+
+            //Gets the image
+            //Check authorization
+            //Send to DAL (Image Repository)
+
+            //Retrieve success or false.
+            //Return success or galse.
+
+
+            return NotFound("DeleteImageTemp");
+        }
+
     }
 
 }
