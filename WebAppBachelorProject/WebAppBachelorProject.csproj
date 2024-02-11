@@ -29,4 +29,9 @@
   <ItemGroup>
     <Folder Include="wwwroot\Uploads\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\css\Gallery.css" />
+    <None Include="wwwroot\css\Home.css" />
+  </ItemGroup>
 </Project>
