@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Security.Policy;
 
 namespace WebAppBachelorProject.Controllers
 {
@@ -27,7 +26,7 @@ namespace WebAppBachelorProject.Controllers
 
             _logger.LogInformation("ImageController: GenerateDescription has been called."); //Debug line. 
 
-             GenerateEvaluation(); //Temp; 
+            GenerateEvaluation(); //Temp; 
 
             return NotFound("Temporarily"); //Temp; 
 
@@ -38,7 +37,7 @@ namespace WebAppBachelorProject.Controllers
             //Display the description on the page. 
 
             //Trigger another function called GenerateEvaluation()
-           
+
         }
 
 
@@ -54,7 +53,7 @@ namespace WebAppBachelorProject.Controllers
 
             //Need to get the description from page.
             //Need to get the image. 
-            
+
             //Need to send the image to docker ML to get the evaluation.
             //Need to retrieve the evaluation. 
             //Need to display the evaluation on page. 
@@ -75,7 +74,7 @@ namespace WebAppBachelorProject.Controllers
             //Need to save image to a local folder somewhere. At this point, not sure where. 
 
             //Returns folderPath
-           
+
 
             return NotFound("SaveImageTemp");
         }
