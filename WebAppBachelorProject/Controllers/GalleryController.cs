@@ -8,9 +8,48 @@ namespace WebAppBachelorProject.Controllers
         // GET: Gallery
 
         [Authorize]
-        public ActionResult Index()
+        public IActionResult Index()
         {
             return View();
+            //    try
+            //    {
+            //        ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+
+            //        //"_context" must be either ImageDb or application???
+            //        var gallery = from s in _context.Gallery
+            //                      select s;
+            //        if (!String.IsNullOrEmpty(searchString))
+            //        {
+            //            gallery = gallery.Where(s => s.Title.Contains(searchString)
+            //                                         || s.Description.Contains(searchString));
+            //        }
+
+            //        switch (sortOrder)
+            //        {
+            //            case "name_desc":
+            //                gallery = gallery.OrderByDescending(s => s.Title);
+            //                break;
+            //            default:
+            //                gallery = gallery.OrderBy(s => s.Title);
+            //                break;
+            //        }
+
+            //        if (gallery == null || !gallery.Any())
+            //        {
+            //            ViewBag.ErrorMessage = "No images found.";
+            //            return View();
+            //        }
+
+            //        return View(gallery.ToList() as string);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        ViewBag.ErrorMessage = "An error has occured while retrieving the gallery";
+            //        return View();
+            //    }
+            //}
+
+
         }
 
 
@@ -92,3 +131,5 @@ namespace WebAppBachelorProject.Controllers
         }
     }
 }
+
+

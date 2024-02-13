@@ -29,7 +29,7 @@ namespace WebAppBachelorProject.Controllers
 
             _logger.LogInformation("ImageController: GenerateDescription has been called."); //Debug line. 
 
-             GenerateEvaluation(); //Temp; 
+            GenerateEvaluation(); //Temp; 
 
             return NotFound("Temporarily GenerateDescription"); //Temp; 
 
@@ -40,7 +40,7 @@ namespace WebAppBachelorProject.Controllers
             //Display the description on the page. 
 
             //Trigger another function called GenerateEvaluation()
-           
+
         }
 
 
@@ -56,7 +56,7 @@ namespace WebAppBachelorProject.Controllers
 
             //Need to get the description from page.
             //Need to get the image. 
-            
+
             //Need to send the image to docker ML to get the evaluation.
             //Need to retrieve the evaluation. 
             //Need to display the evaluation on page. 

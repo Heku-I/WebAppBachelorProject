@@ -24,9 +24,16 @@
 
   <ItemGroup>
     <None Remove="Views\Gallary\" />
+    <None Remove="Views\About\" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\Uploads\" />
+    <Folder Include="Views\About\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\css\Gallery.css" />
+    <None Include="wwwroot\css\Home.css" />
   </ItemGroup>
 </Project>
