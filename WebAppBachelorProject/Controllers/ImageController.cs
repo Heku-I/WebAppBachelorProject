@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using System.Security.Policy;
 
 namespace WebAppBachelorProject.Controllers
@@ -29,7 +31,7 @@ namespace WebAppBachelorProject.Controllers
 
              GenerateEvaluation(); //Temp; 
 
-            return NotFound("Temporarily"); //Temp; 
+            return NotFound("Temporarily GenerateDescription"); //Temp; 
 
             //Need to send the image to Docker. 
 
@@ -59,25 +61,54 @@ namespace WebAppBachelorProject.Controllers
             //Need to retrieve the evaluation. 
             //Need to display the evaluation on page. 
 
-            return NotFound("Temporarily"); //temp. 
+            return NotFound("Temporarily GenerateEvaluation"); //temp. 
         }
 
 
 
         /// <summary>
-        /// Saving image to a folder.
+        /// Saving image to a folder. 
+        /// User must be logged in. 
         /// </summary>
         /// <returns>The folder path</returns>
-        public async Task<IActionResult> SaveImage()
+        /// 
+
+        [Authorize]
+            public async Task<IActionResult> SaveImage(IFormFile image)
         {
             _logger.LogInformation("ImageController: SaveImage has been called.");
 
             //Need to save image to a local folder somewhere. At this point, not sure where. 
+            //For now I think in "wwwroot > Uploads", unless we can use and save in some type of directory in Docker. 
 
-            //Returns folderPath
+            //Return folderPath + imageName
+
+            if (image != null && image.Length > 0)
+            {
+
+                var fileName = Path.GetFileName(image.FileName);
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", fileName);
+
+                using (var stream = new FileStream(path, FileMode.Create))
+                {
+                    image.CopyTo(stream);
+                }
+
+                //Call ImageToDb();
+                ImageToDB(); //Parameters should be the image path and metadata. 
+
+
+                //Not sure if we need this yet...
+                return Json(new { success = true, message = "Image uploaded successfully!" });
+ 
+            }
+            //Logging error: 
+            _logger.LogError("ImageController: Error. Image has not been saved.");
+
+            //Not sure if we need this yet...
+            return Json(new { success = false, message = "Invalid file!" });
            
 
-            return NotFound("SaveImageTemp");
         }
 
 
