@@ -41,10 +41,11 @@ namespace WebAppBachelorProject.Controllers
 
             //Trigger another function called GenerateEvaluation()
 
+
+            //Need to send it with JSON, image Base64.
         }
 
 
-        /// <summary>
         /// <summary>
         /// This function will be called from the GenerateDescription() (or maybe something else in the future). 
         /// It will generate the evaluation. 
