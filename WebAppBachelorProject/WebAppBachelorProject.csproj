@@ -29,7 +29,6 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\Uploads\" />
-    <Folder Include="Views\About\" />
   </ItemGroup>
 
   <ItemGroup>
