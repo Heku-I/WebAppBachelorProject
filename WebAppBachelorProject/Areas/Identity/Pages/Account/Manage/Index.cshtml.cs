@@ -6,17 +6,18 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using WebAppBachelorProject.Areas.Identity.Data;
 
 namespace WebAppBachelorProject.Areas.Identity.Pages.Account.Manage
 {
     public class IndexModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<WebAppBachelorProjectUser> _userManager;
+        private readonly SignInManager<WebAppBachelorProjectUser> _signInManager;
 
         public IndexModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            UserManager<WebAppBachelorProjectUser> userManager,
+            SignInManager<WebAppBachelorProjectUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -52,12 +53,23 @@ namespace WebAppBachelorProject.Areas.Identity.Pages.Account.Manage
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
+            ///
+            [Required]
+            [DataType(DataType.Text)]
+            [Display(Name = "Firstname")]
+            public string Firstname { get; set; }
+
+            [Required]
+            [Display(Name = "Lastname")]
+            [DataType(DataType.Text)]
+            public string Lastname { get; set; }
+
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
         }
 
-        private async Task LoadAsync(IdentityUser user)
+        private async Task LoadAsync(WebAppBachelorProjectUser user)
         {
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
@@ -66,8 +78,22 @@ namespace WebAppBachelorProject.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
                 PhoneNumber = phoneNumber
             };
+
+            if (Input.Firstname != user.Firstname)
+            {
+                user.Firstname = Input.Firstname;
+            }
+
+            if (Input.Lastname != user.Lastname)
+            {
+                user.Lastname = Input.Lastname;
+            }
+
+            await _userManager.UpdateAsync(user);
         }
 
         public async Task<IActionResult> OnGetAsync()

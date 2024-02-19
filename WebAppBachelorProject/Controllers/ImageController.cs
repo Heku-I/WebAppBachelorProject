@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using System.Security.Policy;
 
 namespace WebAppBachelorProject.Controllers
 {
@@ -29,7 +27,7 @@ namespace WebAppBachelorProject.Controllers
 
             _logger.LogInformation("ImageController: GenerateDescription has been called."); //Debug line. 
 
-            GenerateEvaluation(); //Temp; 
+            await GenerateEvaluation(); //Temp; 
 
             return NotFound("Temporarily GenerateDescription"); //Temp; 
 
@@ -51,7 +49,7 @@ namespace WebAppBachelorProject.Controllers
         /// It will generate the evaluation. 
         /// </summary>
         /// <returns>Return the evaluation from the description</returns>
-        public async Task<IActionResult> GenerateEvaluation()
+        public Task<IActionResult> GenerateEvaluation()
         {
             _logger.LogInformation("ImageController: GenerateEvaluation has been called.");
 
@@ -62,7 +60,7 @@ namespace WebAppBachelorProject.Controllers
             //Need to retrieve the evaluation. 
             //Need to display the evaluation on page. 
 
-            return NotFound("Temporarily GenerateEvaluation"); //temp. 
+            return Task.FromResult<IActionResult>(NotFound("Temporarily GenerateEvaluation")); //temp. 
         }
 
 
@@ -75,7 +73,7 @@ namespace WebAppBachelorProject.Controllers
         /// 
 
         [Authorize]
-            public async Task<IActionResult> SaveImage(IFormFile image)
+        public async Task<IActionResult> SaveImage(IFormFile image)
         {
             _logger.LogInformation("ImageController: SaveImage has been called.");
 
@@ -101,14 +99,14 @@ namespace WebAppBachelorProject.Controllers
 
                 //Not sure if we need this yet...
                 return Json(new { success = true, message = "Image uploaded successfully!" });
- 
+
             }
             //Logging error: 
             _logger.LogError("ImageController: Error. Image has not been saved.");
 
             //Not sure if we need this yet...
             return Json(new { success = false, message = "Invalid file!" });
-           
+
 
         }
 
