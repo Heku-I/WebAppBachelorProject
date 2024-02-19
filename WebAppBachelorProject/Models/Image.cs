@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using WebAppBachelorProject.Areas.Identity.Data;
 
 namespace WebAppBachelorProject.Models
 {
@@ -21,6 +22,6 @@ namespace WebAppBachelorProject.Models
 
 
         //Navigation Properties: 
-        public ApplicationUser User { get; set; }
+        public WebAppBachelorProjectUser User { get; set; }
     }
 }

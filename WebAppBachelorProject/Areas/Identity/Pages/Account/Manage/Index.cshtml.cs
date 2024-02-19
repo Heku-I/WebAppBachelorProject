@@ -83,17 +83,6 @@ namespace WebAppBachelorProject.Areas.Identity.Pages.Account.Manage
                 PhoneNumber = phoneNumber
             };
 
-            if (Input.Firstname != user.Firstname)
-            {
-                user.Firstname = Input.Firstname;
-            }
-
-            if (Input.Lastname != user.Lastname)
-            {
-                user.Lastname = Input.Lastname;
-            }
-
-            await _userManager.UpdateAsync(user);
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -132,6 +121,18 @@ namespace WebAppBachelorProject.Areas.Identity.Pages.Account.Manage
                     return RedirectToPage();
                 }
             }
+
+            if (Input.Firstname != user.Firstname)
+            {
+                user.Firstname = Input.Firstname;
+            }
+
+            if (Input.Lastname != user.Lastname)
+            {
+                user.Lastname = Input.Lastname;
+            }
+
+            await _userManager.UpdateAsync(user);
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";

@@ -6,6 +6,8 @@ namespace WebAppBachelorProject.Areas.Identity.Data
     {
         [PersonalData] public string? Firstname { get; set; }
         [PersonalData] public string? Lastname { get; set; }
+
+        public bool Consent { get; set; } = false;
     }
 }
 
