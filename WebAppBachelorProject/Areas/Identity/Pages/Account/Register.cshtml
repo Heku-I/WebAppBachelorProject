@@ -4,45 +4,84 @@
     ViewData["Title"] = "Register";
 }
 
-<h1>@ViewData["Title"]</h1>
+<head>
+    <style>
+        body {
+            font-family: 'Squada One', sans-serif;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div class="row">
-    <div class="col-md-4">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            
-            <div class="form-floating">
-                <input asp-for="Input.Firstname" class="form-control" autocomplete="Firstname" aria-required="true" />
-                <label asp-for="Input.Firstname"></label>
-                <span asp-validation-for="Input.Firstname" class="text-danger"></span>
+    <style>
+        body {
+            overflow-y: scroll;
+        }
+
+        h1, p, label, a {
+            color: #000;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+        }
+    </style>
+
+</head>
+<body class="bg-light">
+    <span id=skew-bg></span>
+    <div class="container d-flex align-items-center min-vh-100">
+        <div class="row justify-content-center w-100">
+            <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+                <div class="card rounded-4">
+                    <div class="card-body p-5 bg-transparent">
+                        <h1 class="display-3" style="font-weight: 900">
+                            Create
+                            <small class="mb-4 display-5" style="font-weight: 500">
+                                an account.
+                                <br>
+                                Start generating descriptions.
+                            </small>
+                        </h1>
+                        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                            <div class="mb-3">
+                                <label for="Input_Firstname" class="form-label">Your firstname</label>
+                                <input asp-for="Input.Firstname" id="Input_Email" class="form-control form-control-lg" autocomplete="username" aria-required="true" />
+                                <span asp-validation-for="Input.Firstname" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="Input_Email" class="form-label">Your lastname</label>
+                                <input asp-for="Input.Lastname" id="Input_Email" class="form-control form-control-lg" autocomplete="username" aria-required="true" />
+                                <span asp-validation-for="Input.Lastname" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="Input_Email" class="form-label">Your email</label>
+                                <input asp-for="Input.Email" id="Input_Email" class="form-control form-control-lg" autocomplete="email" aria-required="true" />
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="Input_Password" class="form-label">Enter password</label>
+                                <input asp-for="Input.Password" id="Input_Password" class="form-control form-control-lg" autocomplete="new-password" aria-required="true" />
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="Input_ConfirmPassword" class="form-label">Confirm password</label>
+                                <input asp-for="Input.ConfirmPassword" id="Input_ConfirmPassword" class="form-control form-control-lg" autocomplete="new-password" aria-required="true" />
+                                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <button id="registerSubmit" type="submit" class="btn btn-dark btn-lg">Register</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            
-            <div class="form-floating">
-                <input asp-for="Input.Lastname" class="form-control" autocomplete="Lastname" aria-required="true" />
-                <label asp-for="Input.Lastname"></label>
-                <span asp-validation-for="Input.Lastname" class="text-danger"></span>
-            </div>
-            <div class="form-floating">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
-                <label asp-for="Input.Email"></label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" />
-                <label asp-for="Input.Password"></label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
-                <label asp-for="Input.ConfirmPassword"></label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
+        </div>
     </div>
-    <div class="col-md-6 col-md-offset-2">
+    </body>
+    
+
+    <section class="mt-4 text-center">
         <section>
             <h3>Use another service to register.</h3>
             <hr />
