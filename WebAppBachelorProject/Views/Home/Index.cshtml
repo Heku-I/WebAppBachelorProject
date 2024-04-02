@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+
 }
 
 <!DOCTYPE html>
@@ -13,6 +14,7 @@
 </head>
 
 <body>
+
     <span class="d-flex" id="skew-bg"> </span>
     <!--content-->
     <div class="content">
@@ -39,8 +41,11 @@
                 <input type="file" id="file-input" accept="image/*" style="display: none;" />
                
             </div>
+
             <div id="preview"></div>
             <div id="GenerateButtons"></div>
+            <div id="UploadImage"></div> <!--This might need to get removed. Just for debugging atm.-->
+
         </div>
     </div>
 
@@ -106,21 +111,28 @@
     </div>
 
 
+
     @section scripts {
         <script>
+
+
+
             document.addEventListener("DOMContentLoaded", function () {
                 var dropArea = document.getElementById("drop-area");
-               var fileInput = document.getElementById("file-input");
+                var fileInput = document.getElementById("file-input");
                 var preview = document.getElementById("preview");
+                var imageData = null; 
 
-              
+
+
                 fileInput.addEventListener("change", function () {
 
-                    previewImage(); 
- 
+                    previewImage();
+
 
                 });
-             
+
+
 
 
                 //I think we need sources for this code:
@@ -142,7 +154,7 @@
 
                     if (files.length > 0) {
                         fileInput.files = files;
-                         previewImage();
+                        previewImage();
                     }
                 });
 
@@ -156,50 +168,137 @@
                     e.stopPropagation();
                 });
 
-
-                function previewImage() {
-                var file = fileInput.files[0];
-
-                if (file) {
-                var reader = new FileReader();
-
-                reader.onload = function (e) {
-
-
-                    //The following happens when the image is in preview-mode.
-
-                    preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="img-fluid rounded" />';
-                    dropArea.hidden = true;
-                    document.getElementById("exampleCards").hidden = true; 
-                    createButton(); 
-                };
-
-                reader.readAsDataURL(file);
-                }
-
-                }
-
-
-                
-                // A function to show the buttons when image is in preview-mode. 
+                //Showing button only when called.
                 function createButton() {
 
-                    var generateButton = document.getElementById("GenerateButtons");
 
-                    //Need to change styling on the button. 
-                    //The form/button will trigger event in server. 
-                    generateButton.innerHTML = '<form action="/Image/GenerateDescription" method="post"> <button type="submit">Generate Description</button> </form>';
+
+                    var generateButtonContainer = document.getElementById("GenerateButtons");
+                    generateButtonContainer.innerHTML = '';
+
+
+                    //Creating the GenerateButton
+                    var sendButton = document.createElement('button');
+                    sendButton.innerText = 'Generate Description';
+                    sendButton.addEventListener('click', function () {
+                        sendImageData();
+                    });
+
+                    generateButtonContainer.appendChild(sendButton);
+
+
+                    //Creating the UploadButton
+                    var uploadButton = document.createElement('button');
+                    uploadButton.innerText = 'Save Image';
+
+                    uploadButton.addEventListener('click', function () {
+                        saveImage();
+                    });
+
+
+
+                    generateButtonContainer.appendChild(uploadButton);
+
 
 
                 }
 
 
+                function previewImage() {
+                    var file = fileInput.files[0];
+
+                    if (file) {
+                        var reader = new FileReader();
+
+                        reader.onload = function (e) {
+
+                            //The following happens when the image is in preview-mode.
+
+                            preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="img-fluid rounded" />';
+                            dropArea.hidden = true;
+                            document.getElementById("exampleCards").hidden = true;
+
+
+                            imageData = e.target.result;
+                            
+                            //To show button
+                            createButton();
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+
+                }
+
+
+
+
+
+                function sendImageData() {
+                    if (imageData) {
+                        var jsonData = { imageData: imageData };
+
+                        fetch('/Image/GetImage', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(jsonData),
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Success:', data);
+                                // Display the received description on your page
+                                displayDescription(data.Description);
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            });
+                    } else {
+                        console.error('No image data to send');
+                    }
+                }
+
+
+                function saveImage() {
+                    var fileInput = document.getElementById('file-input');
+                    if (fileInput.files.length > 0) {
+                        var file = fileInput.files[0];
+                        var description = "Just temporary description. This will come from the description on site." //Temporary. Needs to be switched with 
+
+                        var formData = new FormData();
+                        formData.append('image', file); 
+                        formData.append('description', file); 
+                        
+
+                        fetch('/Image/SaveImage', {
+                            method: 'POST',
+                            body: formData,
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Success:', data);
+                                // Need to display a success message or handling the returned data
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                // Handle any errors, e.g., Need to display error message to the user
+                            });
+                    } else {
+                        console.error('No file selected');
+                        // Need to display the case where no file is selected but the upload button was clicked
+                    }
+                }
+
 
                 
+
 
             });
         </script>
     }
+
+
 
 </body>
 

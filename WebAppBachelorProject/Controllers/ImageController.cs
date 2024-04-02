@@ -1,9 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MetadataExtractor;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System.IO;
+using WebAppBachelorProject.Models;
 
 namespace WebAppBachelorProject.Controllers
 {
-    public class ImageController : Controller
+
+    [ApiController]
+    [Route("[controller]")]
+    public class ImageController : ControllerBase
     {
 
         private readonly ILogger<ImageController> _logger;
@@ -16,32 +23,53 @@ namespace WebAppBachelorProject.Controllers
 
 
 
+        /// <summary>
+        /// This function will recieve the image from the frontend and check if image is receieved and is OK.
+        /// </summary>
+        /// <returns>Sends it further in the process.</returns>
+        [HttpPost("GetImage")]
+        public async Task<IActionResult> GetImage([FromBody] ImageData data)
+        {
+            _logger.LogInformation("ImageController: GetImage has been called.");
+
+            var base64Data = data.Imagedata.Split(',')[1]; // Removing the data:image/png;base64, part
+            var imageBytes = Convert.FromBase64String(base64Data);
+
+            var description = await SendImageToDocker(imageBytes);
+
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                return NotFound("Could not generate a description.");
+            }
+
+            // Optional: Trigger another function called GenerateEvaluation()
+
+            return Ok(new { Description = description });
+        }
+
+
+
 
         /// <summary>
-        ///  This will be the function to send the image the Docker, machine learning.
-        ///  It starts when "Generate Description" button is clicked in preview-mode. 
+        /// This function will send the image to the Docker with a REST API
         /// </summary>
-        /// <returns>The generated description from ML algorithm</returns>
-        public async Task<IActionResult> GenerateDescription()
+        /// <param name="imageBytes"></param>
+        /// <returns> A generated description from the ML-model </returns>
+        public async Task<string> SendImageToDocker(byte[] imageBytes)
         {
-
-            _logger.LogInformation("ImageController: GenerateDescription has been called."); //Debug line. 
-
-            await GenerateEvaluation(); //Temp; 
-
-            return NotFound("Temporarily GenerateDescription"); //Temp; 
-
-            //Need to send the image to Docker. 
-
-            //Retrieve a description from docker
-
-            //Display the description on the page. 
-
-            //Trigger another function called GenerateEvaluation()
+            _logger.LogInformation("SendImageToDocker has been called.");
 
 
-            //Need to send it with JSON, image Base64.
+
+            // NEED TO IMPLEMENT A WAY TO REACH THE DOCKER CONTAINER WITH API. 
+
+
+
+            //placeholder code
+            return "Generated description from Docker container";
+
         }
+
 
 
         /// <summary>
@@ -71,8 +99,9 @@ namespace WebAppBachelorProject.Controllers
         /// </summary>
         /// <returns>The folder path</returns>
         /// 
-
-        [Authorize]
+        //Needs authorization. Turned off for debugging.
+        //[Authorize]
+        [HttpPost("SaveImage")]
         public async Task<IActionResult> SaveImage(IFormFile image)
         {
             _logger.LogInformation("ImageController: SaveImage has been called.");
@@ -86,19 +115,24 @@ namespace WebAppBachelorProject.Controllers
             {
 
                 var fileName = Path.GetFileName(image.FileName);
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", fileName);
+                var path = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "Uploads", fileName);
+
+                _logger.LogInformation("Attempting to save the image on the following path:  ${path}");
 
                 using (var stream = new FileStream(path, FileMode.Create))
                 {
                     image.CopyTo(stream);
                 }
 
-                //Call ImageToDb();
-                ImageToDB(); //Parameters should be the image path and metadata. 
 
+                //Extracting the metadata from the image
 
-                //Not sure if we need this yet...
-                return Json(new { success = true, message = "Image uploaded successfully!" });
+                _logger.LogInformation("ImageController: Calling ExtractMetaData.");
+
+                ExtractMetaData(path);
+
+                //XX
+               
 
             }
             //Logging error: 
@@ -107,12 +141,57 @@ namespace WebAppBachelorProject.Controllers
             //Not sure if we need this yet...
             return Json(new { success = false, message = "Invalid file!" });
 
+        }
+
+
+
+        public async Task<IActionResult> ExtractMetaData(string path)
+        {
+            _logger.LogInformation("ImageController: ExtractMetaData is reached.");
+
+            if (path != null)
+            {
+
+                var meta = ImageMetadataReader.ReadMetadata(path);
+
+
+                foreach (var directory in meta)
+                {
+                    foreach (var tag in directory.Tags)
+                    {
+                        _logger.LogInformation($"{directory.Name} - {tag.Name} = {tag.Description}");
+                    }
+
+                    foreach (var error in directory.Errors)
+                    {
+                        _logger.LogError($"Error in {directory.Name}: {error}");
+                    }
+                }
+
+                //Calling function to register the image in the database
+                _logger.LogInformation("ImageController: Calling ImageToDB.");
+
+
+
+                ImageToDB(); 
+
+            }
+
+            return Json(new { success = false, message = "Invalid file!" });
+
 
         }
 
 
 
-        //    !!!!!!!!!!!!!!!!!!!!!!!!        Maybe also a function(s) to encrypt and decrypt the images??         !!!!!!!!!!!!!!!!!!!!!!!! 
+
+       
+        
+        private IActionResult Json(object value)
+        {
+            throw new NotImplementedException();
+        }
+
 
 
 
@@ -122,7 +201,7 @@ namespace WebAppBachelorProject.Controllers
         /// <returns>Success or false</returns>
         public async Task<IActionResult> ImageToDB()
         {
-            _logger.LogInformation("ImageController: ImageToDB has been called.");
+            _logger.LogInformation("ImageController: ImageToDB is reached.");
 
             //Need to create the valid output.
 
