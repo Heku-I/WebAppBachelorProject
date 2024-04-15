@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\Uploads\DALL·E 2023-11-13 18.26.11 - A darker green, misty Albanian mountain landscape with an ancient Illyrian tribe settlement, enveloped in a mysterious and tranquil atmosphere, ideal .png\**" />
+    <Content Remove="wwwroot\Uploads\DALL·E 2023-11-13 18.26.11 - A darker green, misty Albanian mountain landscape with an ancient Illyrian tribe settlement, enveloped in a mysterious and tranquil atmosphere, ideal .png\**" />
+    <EmbeddedResource Remove="wwwroot\Uploads\DALL·E 2023-11-13 18.26.11 - A darker green, misty Albanian mountain landscape with an ancient Illyrian tribe settlement, enveloped in a mysterious and tranquil atmosphere, ideal .png\**" />
+    <None Remove="wwwroot\Uploads\DALL·E 2023-11-13 18.26.11 - A darker green, misty Albanian mountain landscape with an ancient Illyrian tribe settlement, enveloped in a mysterious and tranquil atmosphere, ideal .png\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MetadataExtractor" Version="2.8.1" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.25" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.27" />
@@ -29,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\" />
+	  <Folder Include="Data\" />
     <Folder Include="wwwroot\Uploads\" />
   </ItemGroup>
 

@@ -6,14 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebAppBachelorProject.Data;
 
-
 #nullable disable
 
 namespace WebAppBachelorProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240219132605_AppUser")]
-    partial class AppUser
+    [Migration("20240412143215_UpdateToImageId")]
+    partial class UpdateToImageId
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -228,13 +227,14 @@ namespace WebAppBachelorProject.Migrations
             modelBuilder.Entity("WebAppBachelorProject.Models.Image", b =>
                 {
                     b.Property<string>("ImageId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

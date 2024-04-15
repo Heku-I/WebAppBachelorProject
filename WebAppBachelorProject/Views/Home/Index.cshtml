@@ -46,6 +46,8 @@
             <div id="GenerateButtons"></div>
             <div id="UploadImage"></div> <!--This might need to get removed. Just for debugging atm.-->
 
+            <div id="Description" hidden></div>
+
         </div>
     </div>
 
@@ -171,8 +173,6 @@
                 //Showing button only when called.
                 function createButton() {
 
-
-
                     var generateButtonContainer = document.getElementById("GenerateButtons");
                     generateButtonContainer.innerHTML = '';
 
@@ -196,11 +196,7 @@
                     });
 
 
-
                     generateButtonContainer.appendChild(uploadButton);
-
-
-
                 }
 
 
@@ -231,12 +227,10 @@
                 }
 
 
-
-
-
                 function sendImageData() {
-                    if (imageData) {
-                        var jsonData = { imageData: imageData };
+                    var image = fileInput.files[0];
+                    if (image) {
+                        var jsonData = { imageBase64: imageData };
 
                         fetch('/Image/GetImage', {
                             method: 'POST',
@@ -249,7 +243,7 @@
                             .then(data => {
                                 console.log('Success:', data);
                                 // Display the received description on your page
-                                displayDescription(data.Description);
+                                displayDescription(data.description);
                             })
                             .catch((error) => {
                                 console.error('Error:', error);
@@ -260,6 +254,25 @@
                 }
 
 
+                //To display the description on the page. The div-tag is empty and hidden otherwise. 
+                function displayDescription(description) {
+                    var output = document.getElementById("Description");
+                    output.hidden = false; 
+                    if (output) {
+                        output.innerHTML = description;
+
+                        //Also need to create a button here to be able to modify the description. 
+                        //Maybe if the button gets clicked it will turn the text into an input field. 
+                        //Or always have an input field which will show. 
+
+
+                    } else {
+                        console.error('Element with ID "Description" was not found.');
+                    }
+                }
+
+
+
                 function saveImage() {
                     var fileInput = document.getElementById('file-input');
                     if (fileInput.files.length > 0) {
@@ -267,8 +280,9 @@
                         var description = "Just temporary description. This will come from the description on site." //Temporary. Needs to be switched with 
 
                         var formData = new FormData();
+
                         formData.append('image', file); 
-                        formData.append('description', file); 
+                        formData.append('description', description); 
                         
 
                         fetch('/Image/SaveImage', {
@@ -278,15 +292,12 @@
                             .then(response => response.json())
                             .then(data => {
                                 console.log('Success:', data);
-                                // Need to display a success message or handling the returned data
                             })
                             .catch(error => {
                                 console.error('Error:', error);
-                                // Handle any errors, e.g., Need to display error message to the user
                             });
                     } else {
                         console.error('No file selected');
-                        // Need to display the case where no file is selected but the upload button was clicked
                     }
                 }
 

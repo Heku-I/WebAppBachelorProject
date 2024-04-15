@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebAppBachelorProject.Areas.Identity.Data;
+using WebAppBachelorProject.DAL;
 using WebAppBachelorProject.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDefaultIdentity<WebAppBachelorProjectUser>(options => options.SignIn.RequireConfirmedAccount = false) //Set to false so we do not require to confirm account. 
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<IImageRepository, ImageRepository>();
+
 
 var app = builder.Build();
 

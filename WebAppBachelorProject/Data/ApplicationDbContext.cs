@@ -17,5 +17,14 @@ namespace WebAppBachelorProject.Data
         public DbSet<WebAppBachelorProjectUser> WebAppBachelorProjectUsers { get; set; }
         public DbSet<Image> Images { get; set; }
 
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder); 
+            modelBuilder.Ignore<ImageDTO>();
+        }
+
+
     }
 }
