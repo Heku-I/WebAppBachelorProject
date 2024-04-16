@@ -59,6 +59,7 @@ def upload_file():
         image = preprocess_input(image)
         features = vgg_model.predict(image)
         caption = predict_caption(model, features, tokenizer, max_length)
+        print("Predicted caption: " + caption)
         return jsonify({'caption': caption})
 
 if __name__ == '__main__':
