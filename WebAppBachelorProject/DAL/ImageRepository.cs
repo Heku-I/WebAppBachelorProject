@@ -117,5 +117,10 @@ namespace WebAppBachelorProject.DAL
         {
             throw new NotImplementedException();
         }
+
+        public Task<IEnumerable<Image>> GetByUser()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

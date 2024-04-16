@@ -11,7 +11,7 @@ namespace WebAppBachelorProject.DAL
 
         Task<IEnumerable<Image>> GetById(string imageId);
 
-        Task<IEnumerable<Image>> GetByUser(string userId); 
+        Task<IEnumerable<Image>> GetByUser(); 
 
         Task<bool> UpdateImagePath (string imageId,  string path);
 

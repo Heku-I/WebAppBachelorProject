@@ -1,9 +1,9 @@
-﻿using MetadataExtractor;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System.IO;
+using Newtonsoft.Json;
+using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text;
 using WebAppBachelorProject.DAL;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
@@ -59,25 +59,44 @@ namespace WebAppBachelorProject.Controllers
 
 
 
+
         /// <summary>
         /// This function will send the image to the Docker with a REST API
         /// </summary>
         /// <param name="imageBytes"></param>
         /// <returns> A generated description from the ML-model </returns>
+        /// 
+        //Reference: https://stackoverflow.com/questions/50670553/posting-base64-converted-image-data
+        //MultipartFormDataContent //Finn sources!
         public async Task<string> SendImageToDocker(byte[] imageBytes)
         {
-            _logger.LogInformation("SendImageToDocker has been called.");
+            _logger.LogInformation("SendImageToServer has been called.");
 
+            using (var client = new HttpClient())
+            {
+                using (var content = new MultipartFormDataContent())
+                {
+                    // Create ByteArrayContent from image bytes, and add to form data content
+                    var imageContent = new ByteArrayContent(imageBytes);
+                    imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                    content.Add(imageContent, "image", "upload.jpg"); 
 
-
-            // NEED TO IMPLEMENT A WAY TO REACH THE DOCKER CONTAINER WITH API. 
-
-
-
-            //placeholder code
-            return "Generated description from Docker container";
-
+                    var response = await client.PostAsync("http://localhost:5000/predict", content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        _logger.LogInformation($"Response: {responseContent}");
+                        return JsonConvert.DeserializeObject<dynamic>(responseContent).caption;
+                    }
+                    else
+                    {
+                        _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
+                        return "Error: Could not get a description";
+                    }
+                }
+            }
         }
+
 
 
 
@@ -108,8 +127,6 @@ namespace WebAppBachelorProject.Controllers
         /// </summary>
         /// <returns>The folder path</returns>
         /// 
-
-
         [Authorize]
         [HttpPost("SaveImage")]
         public async Task<IActionResult> SaveImage(IFormFile image)
