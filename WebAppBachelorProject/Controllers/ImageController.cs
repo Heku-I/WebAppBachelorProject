@@ -129,9 +129,16 @@ namespace WebAppBachelorProject.Controllers
         /// 
         [Authorize]
         [HttpPost("SaveImage")]
-        public async Task<IActionResult> SaveImage(IFormFile image)
+        public async Task<IActionResult> SaveImage(IFormFile image, [FromForm] string description)
         {
             _logger.LogInformation("ImageController: SaveImage has been called.");
+
+            if (description == null)
+            {
+                _logger.LogError("No description provided.");
+                return BadRequest("No description provided.");
+            }
+            else { _logger.LogInformation($"The description is: {description} ");}
 
             if (image != null && image.Length > 0)
             {
@@ -145,7 +152,7 @@ namespace WebAppBachelorProject.Controllers
                     await image.CopyToAsync(stream); 
                 }
 
-                return await ImageToDB(image, path);  
+                return await ImageToDB(image, description, path);  
             }
             else
             {
@@ -161,7 +168,7 @@ namespace WebAppBachelorProject.Controllers
         /// <returns>Success or false</returns>
         /// 
         [Authorize]
-        public async Task<IActionResult> ImageToDB(IFormFile newImage, string path)
+        public async Task<IActionResult> ImageToDB(IFormFile newImage, string description, string path)
         {
             _logger.LogInformation("ImageController: ImageToDB is reached.");
 
@@ -174,7 +181,7 @@ namespace WebAppBachelorProject.Controllers
 
             }
 
-            image.Description = "Temp desc....."; //To be deleted and replaced:
+            image.Description = description; 
 
 
             _logger.LogInformation("Attempting to register an image with the following model:");

@@ -46,7 +46,7 @@
             <div id="GenerateButtons"></div>
             <div id="UploadImage"></div> <!--This might need to get removed. Just for debugging atm.-->
 
-            <div id="Description" hidden></div>
+            <textarea id="Description" hidden></textarea>
 
         </div>
     </div>
@@ -272,24 +272,26 @@
                 }
 
 
-
                 function saveImage() {
                     var fileInput = document.getElementById('file-input');
                     if (fileInput.files.length > 0) {
                         var file = fileInput.files[0];
-                        var description = "Just temporary description. This will come from the description on site." //Temporary. Needs to be switched with 
+                        var description = document.getElementById("Description").value; 
 
                         var formData = new FormData();
-
-                        formData.append('image', file); 
-                        formData.append('description', description); 
-                        
+                        formData.append('image', file);
+                        formData.append('description', description);
 
                         fetch('/Image/SaveImage', {
                             method: 'POST',
-                            body: formData,
+                            body: formData
                         })
-                            .then(response => response.json())
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Server responded with: ' + response.status);
+                                }
+                                return response.json();
+                            })
                             .then(data => {
                                 console.log('Success:', data);
                             })
@@ -300,6 +302,8 @@
                         console.error('No file selected');
                     }
                 }
+
+
 
 
                 
