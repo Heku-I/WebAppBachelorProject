@@ -176,10 +176,15 @@
                     var generateButtonContainer = document.getElementById("GenerateButtons");
                     generateButtonContainer.innerHTML = '';
 
+                    //creating a container for the buttons
+                    generateButtonContainer.classList.add('d-flex', 'justify-content-center', 'mt-3');
+
+                 
 
                     //Creating the GenerateButton
                     var sendButton = document.createElement('button');
                     sendButton.innerText = 'Generate Description';
+                    sendButton.classList.add('btn','btn-lg', 'btn-success');
                     sendButton.addEventListener('click', function () {
                         sendImageData();
                     });
@@ -189,14 +194,16 @@
 
                     //Creating the UploadButton
                     var uploadButton = document.createElement('button');
-                    uploadButton.innerText = 'Save Image';
-
+                    uploadButton.innerText = 'Save';
+                    uploadButton.classList.add('btn', 'btn-dark');
                     uploadButton.addEventListener('click', function () {
                         saveImage();
                     });
 
 
                     generateButtonContainer.appendChild(uploadButton);
+
+                    
                 }
 
 
