@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text;
 using WebAppBachelorProject.DAL;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
+using ImageSharpImage = SixLabors.ImageSharp.Image;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 
 namespace WebAppBachelorProject.Controllers
 {
@@ -98,8 +100,6 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
-
-
         /// <summary>
         /// This function will be called from the GenerateDescription() (or maybe something else in the future). 
         /// It will generate the evaluation. 
@@ -120,16 +120,139 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
+        // PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions
+        //USING IMAGESHARP - DOCUMENTATION https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Exif.html
 
+        /// <summary>
+        /// Getting request from client, function saveImage() from form.
+        /// Checking if a description is provided. 
+        /// Checking if image is procided.
+        /// Sets the path.
+        /// Detects the format on the image.
+        /// Sets the description as a metadata
+        /// Saves the image on the path
+        /// </summary>
+        /// <param name="imageFile"></param>
+        /// <param name="description"></param>
+        /// <returns>Sends to ImageToDB() to save it to database. </returns>
+        [Authorize]
+        [HttpPost("SaveMeta")]
+        public async Task<IActionResult> SaveMetadataToImage([FromForm] IFormFile imageFile, [FromForm] string description)
+        {
+            _logger.LogInformation("ImageController: SaveMetadataToImage has been called.");
+
+
+            //Error logging on the required function parameter inputs.
+            if (string.IsNullOrEmpty(description))
+            {
+                _logger.LogError("No description provided.");
+                return BadRequest("No description provided.");
+            }
+            else
+            {
+                _logger.LogInformation($"Found description: {description}");
+            }
+
+            if (imageFile == null)
+            {
+                _logger.LogError("No image provided.");
+                return BadRequest("No image provided.");
+            }
+            else
+            {
+                _logger.LogInformation("Found Image.}");
+
+            }
+
+            // Determine the path (wwwroot/uplads) - Open to change. 
+            string fileName = Path.GetFileName(imageFile.FileName); 
+            string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads"); 
+            string fullPath = Path.Combine(folderPath, fileName);
+
+
+            try
+            {
+                //Accessing the file's content to read/process
+                using (var imageStream = imageFile.OpenReadStream())
+                {
+                    //Getting the format with ImageSharp.DetectFormat. We later going to use this to save the image w/ the same format. 
+                    IImageFormat format = ImageSharpImage.DetectFormat(imageStream);
+                    _logger.LogInformation($"{format}"); //Debugging purposes.
+                    imageStream.Position = 0;
+
+                    //Loads the image from imageStream into an ImageSharp-object.
+                    using (var image = ImageSharpImage.Load(imageStream))
+                    {
+                        //Getting the metadata & Inserting the description into "ImageDescription"-metadata. 
+                        var metadata = image.Metadata.ExifProfile ?? new ExifProfile();
+                        metadata.SetValue(ExifTag.ImageDescription, description);
+                        image.Metadata.ExifProfile = metadata;
+
+                        //Saving the image
+                        await using (var outputFileStream = new FileStream(fullPath, FileMode.Create))
+                        {
+                            image.Save(outputFileStream, format);
+                            
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while processing the image: {ex.Message}");
+            }
+            _logger.LogInformation("Image has been saved successfully. Sending to ImageToDB(desc, path)"); 
+            return await ImageToDB(description, fullPath); //For 
+
+        }
+
+
+
+
+
+
+        /* FUNCTION JUST TO SEE THE METADATA. TO BE DELTED. 
+         
+        public void CheckImageMetadata(string imagePath)
+        {
+            using (var image = ImageSharpImage.Load(imagePath))
+            {
+                var metadata = image.Metadata.ExifProfile;
+                if (metadata != null)
+                {
+                    if (metadata.TryGetValue(ExifTag.ImageDescription, out var imageDescription))
+                    {
+                        _logger.LogInformation("Image Description from metadata: " + imageDescription.GetValue());
+                    }
+                    else
+                    {
+                        _logger.LogError("No Image Description set in EXIF data.");
+                    }
+                }
+                else
+                {
+                    _logger.LogError($"No EXIF metadata found.");   
+                }
+            }
+        }
+
+        */
+
+
+
+
+
+
+
+        /*
         /// <summary>
         /// Saving image to a folder. 
         /// User must be logged in. 
         /// </summary>
         /// <returns>The folder path</returns>
-        /// 
+        ///
         [Authorize]
-        [HttpPost("SaveImage")]
-        public async Task<IActionResult> SaveImage(IFormFile image, [FromForm] string description)
+        public async Task<IActionResult> SaveImage(Bitmap image, string description )
         {
             _logger.LogInformation("ImageController: SaveImage has been called.");
 
@@ -140,19 +263,23 @@ namespace WebAppBachelorProject.Controllers
             }
             else { _logger.LogInformation($"The description is: {description} ");}
 
-            if (image != null && image.Length > 0)
+            if (image != null)
             {
-                var fileName = Path.GetFileName(image.FileName);
-                var path = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "Uploads", fileName);
+                // Generate a filename
+                var filename = $"image_{DateTime.Now:yyyyMMddHHmmss}.jpg";
+                
 
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", filename);
                 _logger.LogInformation($"Attempting to save the image on the following path: {path}");
 
-                using (var stream = new FileStream(path, FileMode.Create))
-                {
-                    await image.CopyToAsync(stream); 
-                }
+                // Save the bitmap to the path
+                image.Save(path, ImageFormat.Jpeg);
 
-                return await ImageToDB(image, description, path);  
+                // Optionally, here you can call another function to save image details to DB
+                // return await ImageToDB(image, description, path);
+
+                return await ImageToDB(image, description, path);
+
             }
             else
             {
@@ -160,6 +287,7 @@ namespace WebAppBachelorProject.Controllers
                 return BadRequest(new { Success = false, Message = "Invalid image." });
             }
         }
+        */
 
 
         /// <summary>
@@ -168,30 +296,17 @@ namespace WebAppBachelorProject.Controllers
         /// <returns>Success or false</returns>
         /// 
         [Authorize]
-        public async Task<IActionResult> ImageToDB(IFormFile newImage, string description, string path)
+        public async Task<IActionResult> ImageToDB(string description, string path)
         {
             _logger.LogInformation("ImageController: ImageToDB is reached.");
 
-
-            Image image = new Image();
-
-            if (newImage == null)
+            if (string.IsNullOrEmpty(path))
             {
-                return BadRequest(new Responses { Success = false, Message = "Invalid image data." });
-
+                return BadRequest(new { Success = false, Message = "Invalid image data, path is missing." });
             }
 
-            image.Description = description; 
-
-
-            _logger.LogInformation("Attempting to register an image with the following model:");
-
-            //Loggers for debugging: 
-            _logger.LogInformation($"The description of the image is: {image.Description}");
-
-
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation($"The save has been requested by user ID {image.UserId}");
+            _logger.LogInformation($"The save has been requested by user ID {userId}");
 
             if (string.IsNullOrEmpty(userId))
             {
@@ -200,16 +315,23 @@ namespace WebAppBachelorProject.Controllers
                 return Forbid(); //You should not be able to register an image to DB if you are not logged in. 
             }
 
+            Models.Image image = new Models.Image
+            {
+                Description = description,
+                ImagePath = path,
+                UserId = userId
+            };
+
+
+            //Loggers for debugging: 
+            _logger.LogInformation($"The description of the image is: {image.Description}");
+            _logger.LogInformation($"The path of the image is: {image.ImagePath}");
+
 
             //Try to create the model.
             try
             {
-                image.UserId = userId;
-                image.ImagePath = path;
-
-                _logger.LogInformation($"The image path of the image is: {image.ImagePath}");
-
-                if (ModelState.IsValid)
+                if (ModelState.IsValid || image != null)
                 {
                     //Method in DAL
                     bool returnOk = await _imageRepository.Create(image);
@@ -223,6 +345,9 @@ namespace WebAppBachelorProject.Controllers
                             $"User: {image.UserId}");
 
                         var response = new Responses { Success = true, Message = $"Image created successfully" };
+
+                        //CheckImageMetadata(path);
+
                         return Ok(response);
 
                     }

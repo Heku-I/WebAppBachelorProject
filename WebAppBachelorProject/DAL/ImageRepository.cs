@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 using WebAppBachelorProject.Data;
-using WebAppBachelorProject.Models;
+using ImageModel = WebAppBachelorProject.Models.Image;
 
 namespace WebAppBachelorProject.DAL
 {
@@ -15,13 +14,13 @@ namespace WebAppBachelorProject.DAL
         public ImageRepository(ApplicationDbContext context, ILogger<ImageRepository> logger)
         {
             _context = context;
-            _logger = logger;  
+            _logger = logger;
         }
 
 
 
         //Create image record
-        public async Task<bool> Create(Image image)
+        public async Task<bool> Create(ImageModel image)
         {
             try
             {
@@ -35,18 +34,18 @@ namespace WebAppBachelorProject.DAL
                 return false;
             }
         }
-   
 
-    //Get all images
-    public async Task <IEnumerable<Image>> GetAll()
+
+        //Get all images
+        public async Task<IEnumerable<ImageModel>> GetAll()
         {
-            return await _context.Images.ToListAsync(); 
+            return await _context.Images.ToListAsync();
 
         }
 
 
         //Get all the images by the user when logged in 
-        public async Task<IEnumerable<Image?>> GetByUser(string hostId)
+        public async Task<IEnumerable<ImageModel?>> GetByUser(string hostId)
         {
 
             var images = await _context.Images.Where(e => e.UserId == hostId).ToListAsync();
@@ -80,7 +79,7 @@ namespace WebAppBachelorProject.DAL
         }
 
         //Get an image by it's ID. 
-        public async Task<Image?> GetById(int id)
+        public async Task<ImageModel?> GetById(int id)
         {
 
             var image = await _context.Images.FindAsync(id);
@@ -108,17 +107,17 @@ namespace WebAppBachelorProject.DAL
             return true;
         }
 
-        Task<IEnumerable<Image>> IImageRepository.GetById(string imageId)
+        public Task<IEnumerable<ImageModel>> GetById(string imageId)
         {
             throw new NotImplementedException();
         }
 
-        Task<bool> IImageRepository.UpdateImagePath(string imageId, string path)
+        public Task<IEnumerable<ImageModel>> GetByUser()
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Image>> GetByUser()
+        public Task<bool> UpdateImagePath(string imageId, string path)
         {
             throw new NotImplementedException();
         }

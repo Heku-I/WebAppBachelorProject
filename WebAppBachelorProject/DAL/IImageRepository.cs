@@ -1,17 +1,18 @@
 ﻿using WebAppBachelorProject.Models;
+using ImageModel = WebAppBachelorProject.Models.Image;
 
 namespace WebAppBachelorProject.DAL
 {
     public interface IImageRepository
     {
 
-        Task<bool> Create(Image image);
+        Task<bool> Create(ImageModel image);
 
-        Task<IEnumerable<Image>> GetAll();
+        Task<IEnumerable<ImageModel>> GetAll();
 
-        Task<IEnumerable<Image>> GetById(string imageId);
+        Task<IEnumerable<ImageModel>> GetById(string imageId);
 
-        Task<IEnumerable<Image>> GetByUser(); 
+        Task<IEnumerable<ImageModel>> GetByUser(); 
 
         Task<bool> UpdateImagePath (string imageId,  string path);
 

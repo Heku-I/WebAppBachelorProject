@@ -279,10 +279,10 @@
                         var description = document.getElementById("Description").value; 
 
                         var formData = new FormData();
-                        formData.append('image', file);
+                        formData.append('imageFile', file);
                         formData.append('description', description);
 
-                        fetch('/Image/SaveImage', {
+                        fetch('/Image/SaveMeta', {
                             method: 'POST',
                             body: formData
                         })

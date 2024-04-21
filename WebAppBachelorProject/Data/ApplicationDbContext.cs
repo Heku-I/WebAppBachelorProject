@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WebAppBachelorProject.Areas.Identity.Data;
-using WebAppBachelorProject.Models;
+using ImageModel = WebAppBachelorProject.Models.Image;
 
 namespace WebAppBachelorProject.Data
 {
@@ -15,14 +15,14 @@ namespace WebAppBachelorProject.Data
 
 
         public DbSet<WebAppBachelorProjectUser> WebAppBachelorProjectUsers { get; set; }
-        public DbSet<Image> Images { get; set; }
+        public DbSet<ImageModel> Images { get; set; }
 
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder); 
-            modelBuilder.Ignore<ImageDTO>();
+            modelBuilder.Ignore<Models.ImageDTO>();
         }
 
 
