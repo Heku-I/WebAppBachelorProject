@@ -1,6 +1,11 @@
-﻿
+﻿@using Microsoft.AspNetCore.Identity
+@using WebAppBachelorProject.Areas.Identity.Data
+@inject UserManager<WebAppBachelorProjectUser> UserManager; 
+
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Gallery";
+    var userId = UserManager.GetUserId(User);
+    var user = UserManager.FindByIdAsync(userId).Result;
 }
 
 

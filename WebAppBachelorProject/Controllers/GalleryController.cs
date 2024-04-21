@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection.Metadata;
 using WebAppBachelorProject.DAL;
 using WebAppBachelorProject.Data;
 
@@ -13,9 +12,9 @@ namespace WebAppBachelorProject.Controllers
 
         private readonly ApplicationDbContext _context;
         private readonly IImageRepository _imageRepository;
-        private readonly Logger<ImageRepository> _logger;
+        private readonly ILogger<GalleryController> _logger;
 
-        public GalleryController(ApplicationDbContext context, IImageRepository imageRepository, Logger<ImageRepository> logger)
+        public GalleryController(ApplicationDbContext context, IImageRepository imageRepository, ILogger<GalleryController> logger)
         {
             _context = context;
             _imageRepository = imageRepository;
@@ -24,18 +23,16 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-        // GET: Gallery
-        [Authorize]
+
+        //[Authorize]
         public IActionResult Index()
         {
-
-
             return View();
         }
 
 
 
-
+        /*
         public async Task<IActionResult> GetByUser()
         {
             _logger.LogInformation("GallaryController: Index has been called.");
@@ -44,7 +41,7 @@ namespace WebAppBachelorProject.Controllers
 
             return uploadedImages == null ? NotFound() : Ok(uploadedImages);
         }
-
+        */
 
 
 
