@@ -45,10 +45,10 @@ namespace WebAppBachelorProject.DAL
 
 
         //Get all the images by the user when logged in 
-        public async Task<IEnumerable<ImageModel?>> GetByUser(string hostId)
+        public async Task<IEnumerable<ImageModel?>> GetByUser(string userId)
         {
 
-            var images = await _context.Images.Where(e => e.UserId == hostId).ToListAsync();
+            var images = await _context.Images.Where(e => e.UserId == userId).ToListAsync();
 
             if (images == null)
             {
@@ -108,11 +108,6 @@ namespace WebAppBachelorProject.DAL
         }
 
         public Task<IEnumerable<ImageModel>> GetById(string imageId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<ImageModel>> GetByUser()
         {
             throw new NotImplementedException();
         }

@@ -1,12 +1,12 @@
-﻿@using Microsoft.AspNetCore.Identity
-@using WebAppBachelorProject.Areas.Identity.Data
+﻿@model IEnumerable<WebAppBachelorProject.Models.Image>
+@using Microsoft.AspNetCore.Identity;
+@using WebAppBachelorProject.Areas.Identity.Data;
 @inject UserManager<WebAppBachelorProjectUser> UserManager; 
+
 
 @{
     ViewData["Title"] = "Gallery";
-    var userId = UserManager.GetUserId(User);
-    var user = UserManager.FindByIdAsync(userId).Result;
-}
+    var userId = UserManager.GetUserId(User);}
 
 
 
@@ -42,34 +42,29 @@
 
     <section class="mt-5" id="showcase">
 
+
+
     <!-----BOOTSTRAP https://getbootstrap.com/docs/5.3/components/placeholders/ ------>
 
-    
-    <div class="card" aria-hidden="true">
-        <img src="..." class="card-img-top" alt="...">
-        <div class="card-body">
-            <h5 class="card-title placeholder-glow">
-                <span class="placeholder col-6"></span>
-            </h5>
-            <p class="card-text placeholder-glow">
-                <span class="placeholder col-7"></span>
-            </p>
-            <a class="btn btn-primary disabled placeholder col-6" aria-disabled="true"></a>
-        </div>
-    </div>
-
-        <div class="card" aria-hidden="true">
-            <img src="..." class="card-img-top" alt="...">
-            <div class="card-body">
-                <h5 class="card-title placeholder-glow">
-                    <span class="placeholder col-6"></span>
-                </h5>
-                <p class="card-text placeholder-glow">
-                    <span class="placeholder col-7"></span>
-                </p>
-                <a class="btn btn-primary disabled placeholder col-6" aria-disabled="true"></a>
+        @if(Model != null && Model.Any())
+        {
+            @foreach (var upload in Model)
+            {
+                <div class="card" aria-hidden="true">
+                    <img src="@upload.ImagePath" class="card-img-top" alt="@upload.Description">
+                    <div class="card-body">
+                        <p class="card-text">@upload.Description</p>
+                        <a class="btn btn-primary disabled placeholder col-6" aria-disabled="true"></a>
+                    </div>
+                </div>
+            }
+        }else
+        {
+            <div>
+                <h3>You have not saved any images to gallery.</h3>
+                <a action="index" asp-controller="Home">Click Here to Generate Descriptions and Save Your Images!</a>
             </div>
-        </div>
+        }
 
 
     </section>

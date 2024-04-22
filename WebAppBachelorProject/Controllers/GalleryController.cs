@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using WebAppBachelorProject.Areas.Identity.Data;
 using WebAppBachelorProject.DAL;
 using WebAppBachelorProject.Data;
 
@@ -23,25 +27,23 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-
-        //[Authorize]
-        public IActionResult Index()
+        [Authorize]
+        public async Task<IActionResult> Index()
         {
-            return View();
-        }
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation($"The view has been requested by user ID {userId}");
 
+          
+            var images = await _imageRepository.GetByUser(userId);
 
-
-        /*
-        public async Task<IActionResult> GetByUser()
-        {
             _logger.LogInformation("GallaryController: Index has been called.");
 
-            var uploadedImages = await _imageRepository.GetByUser();
+            //ViewData["User"] = User;
 
-            return uploadedImages == null ? NotFound() : Ok(uploadedImages);
+
+            return View(images);
         }
-        */
+        
 
 
 
