@@ -1,0 +1,18 @@
+# Use an official TensorFlow runtime as a parent image
+FROM python:3.8-slim
+
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Copy the current directory contents into the container at /usr/src/app
+COPY . /usr/src/app
+
+# Install any needed packages specified in requirements.txt
+RUN pip install numpy flask tensorflow Pillow Keras-Preprocessing
+
+# Make port 5005 available
+EXPOSE 5005
+
+# Run app.py when the container launches
+CMD ["python", "RS-ModelInferenceServer.py"]
