@@ -42,6 +42,27 @@
                
             </div>
 
+		
+	<!-----
+	**TRYING OUT A NEW DIV FOR UPLOADING MULTIPLE IMAGES. THIS ONE WITH ASP!
+	https://learn.microsoft.com/en-us/answers/questions/1016900/how-to-upload-multiple-pics-at-a-time-in-asp-net-c	
+
+	<form enctype ="multipart/form-data" method"post">
+	<dl>
+		<dt>
+			<label> Upload </label>
+		</dt>
+		
+		<dd>
+		<input type="file" asp-for"uploadfile.FormFile" multiple>
+		</dd>
+	</dl>
+	<input class ="btn" type="submit" value="Upload" />
+	</form>
+	
+	---!>
+
+
             <div id="preview"></div>
             <div id="GenerateButtons"></div>
             <div id="UploadImage"></div> <!--This might need to get removed. Just for debugging atm.-->
@@ -171,7 +192,7 @@
                 });
 
                 //Showing button only when called.
-                function createButton() {
+                function createGenerateButton() {
 
                     var generateButtonContainer = document.getElementById("GenerateButtons");
                     generateButtonContainer.innerHTML = '';
@@ -179,7 +200,7 @@
                     //creating a container for the buttons
                     generateButtonContainer.classList.add('d-flex', 'justify-content-center', 'mt-3');
 
-                 
+             
 
                     //Creating the GenerateButton
                     var sendButton = document.createElement('button');
@@ -191,6 +212,19 @@
 
                     generateButtonContainer.appendChild(sendButton);
 
+
+		}); 
+
+		CreateUploadButton(){
+
+		    var uploadButton = document.createElement('button');
+                    uploadButton.innerText = 'Save';
+                    uploadButton.classList.add('btn', 'btn-dark');
+                    uploadButton.addEventListener('click', function () {
+                        saveImage();
+                    });
+		
+		
 
                     //Creating the UploadButton
                     var uploadButton = document.createElement('button');
@@ -225,13 +259,58 @@
                             imageData = e.target.result;
                             
                             //To show button
-                            createButton();
+                            createGenerateButton();
                         };
 
                         reader.readAsDataURL(file);
                     }
 
                 }
+
+		
+		/* /////////////// -- SENDING MULTIPLE FILES AT A TIME.
+		
+		function SendMultipleImageData() {
+			var imageFiles = fileInput.files[]; 
+			if (imageFiles){
+				var jsonData = {
+				imageBase64: imageData	
+				};	
+		
+			 fetch('/Image/GetMultipleImageFiles', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(jsonData),
+                        })
+			    .then(response => response.json())
+                            .then(data => {
+                                console.log('Success:', data);
+                                // Display the received description on your page
+                                displayDescription(data.description);
+
+				//Displaying the createUploadButton(); 
+				createUploadButton();
+
+				//Might add something here to hide the "generate button". Not sure on how we want this yet. 
+			
+				
+
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            });
+                    } else {
+                        console.error('No image data to send');
+			//Trying to display an informationMessage to page: 
+			document.getElementById('informationOutput').innerHtml("Please upload an image.");
+                    }
+                }
+		
+		
+
+		*/
 
 
                 function sendImageData() {
@@ -251,6 +330,14 @@
                                 console.log('Success:', data);
                                 // Display the received description on your page
                                 displayDescription(data.description);
+
+				//Displaying the createUploadButton(); 
+				createUploadButton();
+
+				//Might add something here to hide the "generate button". Not sure on how we want this yet. 
+			
+				
+
                             })
                             .catch((error) => {
                                 console.error('Error:', error);

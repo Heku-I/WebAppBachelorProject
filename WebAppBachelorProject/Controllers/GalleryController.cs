@@ -36,7 +36,7 @@ namespace WebAppBachelorProject.Controllers
           
             var images = await _imageRepository.GetByUser(userId);
 
-            _logger.LogInformation("GallaryController: Index has been called.");
+            _logger.LogInformation("GalleryController: Index has been called.");
 
             //ViewData["User"] = User;
 

@@ -59,7 +59,33 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
+/*Commenting out becuase not sure if working yet:
 
+	/// Function for the multimedia: 
+	
+	public async Task<IActionResult> GetMultipleImages ([FromBody] ImageDTO imageTransfer){
+
+	_logger_LogInformation("ImageController: function GetMultipleImages is called"); 
+	
+	//Getting each file.
+	foreach(var file in uploadfile.FormFile){
+		//Checking if the file is empty.
+		//Should maybe check the file format here too.
+		if(file.length>0){
+			
+		var base64Data = imageTransfer.ImageBase64.Split(',')[1]; // Removing the data:image/png;base64, part
+            	var imageBytes = Convert.FromBase64String(base64Data);
+			
+			//Maybe call the SendImageToDcoker here, not sure. 
+			SendImageToDocker(imageBytes);	
+		}
+	}
+	
+
+	}
+
+
+*/
 
 
         /// <summary>
@@ -380,11 +406,38 @@ namespace WebAppBachelorProject.Controllers
         /// <returns>success or false</returns>
         public async Task<IActionResult> DeleteImage()
         {
-            _logger.LogInformation("ImageController: DeleteImage has been called.");
+            _logger.LogInformation("GalleryController: DeleteImage has been called.");
+
+		
 
             //Gets the image
+	var imageId = null;
+	var imageToDelete = _context.findById(imageId);
+
+	
             //Check authorization
+	
+	if(imageToDelete.User != user){
+	_logger_logError("user attempted to delete image belonging to imageToDelete.User");
+	return Error(error, "You are not authorized to do this deleting.");
+ 	
+	}
             //Send to DAL (Image Repository)
+
+
+	try{
+		_imageRepository.remove(imageToDelete);
+		logger.logInformation("Deleted the requested image from DB");
+	
+		//Need to send to another function to delete the image from the imageFolder...
+	
+
+	}catch(error e){
+		_logger.logError("Found error while trying to delete the requested image from DB");
+		return error; 	
+	}
+	
+	//logger.logInformation()
 
             //Retrieve success or false.
             //Return success or galse.
