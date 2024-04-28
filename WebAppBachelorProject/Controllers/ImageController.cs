@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using WebAppBachelorProject.DAL;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
 using ImageSharpImage = SixLabors.ImageSharp.Image;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 
 namespace WebAppBachelorProject.Controllers
 {
@@ -59,33 +59,33 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
-/*Commenting out becuase not sure if working yet:
+        /*Commenting out becuase not sure if working yet:
 
-	/// Function for the multimedia: 
-	
-	public async Task<IActionResult> GetMultipleImages ([FromBody] ImageDTO imageTransfer){
+            /// Function for the multimedia: 
 
-	_logger_LogInformation("ImageController: function GetMultipleImages is called"); 
-	
-	//Getting each file.
-	foreach(var file in uploadfile.FormFile){
-		//Checking if the file is empty.
-		//Should maybe check the file format here too.
-		if(file.length>0){
-			
-		var base64Data = imageTransfer.ImageBase64.Split(',')[1]; // Removing the data:image/png;base64, part
-            	var imageBytes = Convert.FromBase64String(base64Data);
-			
-			//Maybe call the SendImageToDcoker here, not sure. 
-			SendImageToDocker(imageBytes);	
-		}
-	}
-	
+            public async Task<IActionResult> GetMultipleImages ([FromBody] ImageDTO imageTransfer){
 
-	}
+            _logger_LogInformation("ImageController: function GetMultipleImages is called"); 
+
+            //Getting each file.
+            foreach(var file in uploadfile.FormFile){
+                //Checking if the file is empty.
+                //Should maybe check the file format here too.
+                if(file.length>0){
+
+                var base64Data = imageTransfer.ImageBase64.Split(',')[1]; // Removing the data:image/png;base64, part
+                        var imageBytes = Convert.FromBase64String(base64Data);
+
+                    //Maybe call the SendImageToDcoker here, not sure. 
+                    SendImageToDocker(imageBytes);	
+                }
+            }
 
 
-*/
+            }
+
+
+        */
 
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace WebAppBachelorProject.Controllers
                     // Create ByteArrayContent from image bytes, and add to form data content
                     var imageContent = new ByteArrayContent(imageBytes);
                     imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-                    content.Add(imageContent, "image", "upload.jpg"); 
+                    content.Add(imageContent, "image", "upload.jpg");
 
                     var response = await client.PostAsync("http://localhost:5000/predict", content);
                     if (response.IsSuccessStatusCode)
@@ -191,8 +191,8 @@ namespace WebAppBachelorProject.Controllers
             }
 
             // Determine the path (wwwroot/uplads) - Open to change. 
-            string fileName = Path.GetFileName(imageFile.FileName); 
-            string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads"); 
+            string fileName = Path.GetFileName(imageFile.FileName);
+            string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
             string fullPath = Path.Combine(folderPath, fileName);
 
 
@@ -218,7 +218,7 @@ namespace WebAppBachelorProject.Controllers
                         await using (var outputFileStream = new FileStream(fullPath, FileMode.Create))
                         {
                             image.Save(outputFileStream, format);
-                            
+
                         }
                     }
                 }
@@ -227,7 +227,7 @@ namespace WebAppBachelorProject.Controllers
             {
                 return StatusCode(500, $"An error occurred while processing the image: {ex.Message}");
             }
-            _logger.LogInformation("Image has been saved successfully. Sending to ImageToDB(desc, path)"); 
+            _logger.LogInformation("Image has been saved successfully. Sending to ImageToDB(desc, path)");
             return await ImageToDB(description, fullPath); //For 
 
         }
@@ -380,7 +380,7 @@ namespace WebAppBachelorProject.Controllers
                     else
                     {
                         var response = new Responses { Success = false, Message = "Failure to save the record to the DB." };
-                        return BadRequest(response); 
+                        return BadRequest(response);
                     }
                 }
                 //If Modelstate is invalid.
@@ -388,7 +388,7 @@ namespace WebAppBachelorProject.Controllers
                 {
                     _logger.LogError("ModelState is invalid");
                     var response = new { Success = false, Message = "Model state is invalid", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) };
-                    return BadRequest(response); 
+                    return BadRequest(response);
                 }
             }
             catch (Exception ex)
@@ -404,7 +404,7 @@ namespace WebAppBachelorProject.Controllers
         /// Deletes a image from the DB
         /// </summary>
         /// <returns>success or false</returns>
-        public async Task<IActionResult> DeleteImage()
+        /*public async Task<IActionResult> DeleteImage()
         {
             _logger.LogInformation("GalleryController: DeleteImage has been called.");
 
@@ -428,11 +428,13 @@ namespace WebAppBachelorProject.Controllers
 	try{
 		_imageRepository.remove(imageToDelete);
 		logger.logInformation("Deleted the requested image from DB");
-	
-		//Need to send to another function to delete the image from the imageFolder...
-	
 
-	}catch(error e){
+                //Need to send to another function to delete the image from the imageFolder...
+
+
+            }
+            catch (error e)
+            {
 		_logger.logError("Found error while trying to delete the requested image from DB");
 		return error; 	
 	}
@@ -447,5 +449,6 @@ namespace WebAppBachelorProject.Controllers
         }
 
     }
-
+*/
+    }
 }

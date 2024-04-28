@@ -25,5 +25,6 @@ namespace WebAppBachelorProject.Models
 
         //Navigation Properties: 
         public WebAppBachelorProjectUser User { get; set; }
+        public int DateCreated { get; internal set; }
     }
 }
