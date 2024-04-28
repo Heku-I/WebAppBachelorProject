@@ -15,8 +15,6 @@ namespace WebAppBachelorProject.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IImageRepository _imageRepository;
         private readonly ILogger<GalleryController> _logger;
-        private string? searchString;
-        private string? sortOrder;
 
         public GalleryController(ApplicationDbContext context, IImageRepository imageRepository, ILogger<GalleryController> logger)
         {
@@ -40,29 +38,6 @@ namespace WebAppBachelorProject.Controllers
 
             //ViewData["User"] = User;
 
-            //filter by description
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                images = images.Where(image => image.Description.Contains(searchString)).ToList();
-
-            }
-
-            _logger.LogInformation("GalleryController: Index has been called");
-
-            //Filter date by descending and ascending 
-
-            ViewData["DateSortParam"] = string.IsNullOrEmpty(sortOrder) ? "date_desc" : "";
-            switch (sortOrder)
-            {
-                case "date_desc":
-                    images = images.OrderByDescending(image => image.DateCreated).ToList();
-                    break;
-                default:
-                    images = images.OrderBy(image => image.DateCreated).ToList();
-                    break;
-            }
-            //Needs Error handling
-            _logger.LogInformation("GalleryController: Index has been called");
 
             return View(images);
         }
@@ -72,5 +47,3 @@ namespace WebAppBachelorProject.Controllers
 
     }
 }
-
-

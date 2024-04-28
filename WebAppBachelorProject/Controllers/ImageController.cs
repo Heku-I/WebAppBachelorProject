@@ -126,24 +126,49 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
-        /// <summary>
-        /// This function will be called from the GenerateDescription() (or maybe something else in the future). 
-        /// It will generate the evaluation. 
-        /// </summary>
-        /// <returns>Return the evaluation from the description</returns>
-        public Task<IActionResult> GenerateEvaluation()
+        [HttpPost("GetDesc")]
+        public async Task<IActionResult> GetDesc([FromBody] string desc)
         {
-            _logger.LogInformation("ImageController: GenerateEvaluation has been called.");
+            _logger.LogInformation("ImageController: GetDesc has been called.");
 
-            //Need to get the description from page.
-            //Need to get the image. 
+            var description = await SendDescToDocker(desc);
 
-            //Need to send the image to docker ML to get the evaluation.
-            //Need to retrieve the evaluation. 
-            //Need to display the evaluation on page. 
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                return NotFound("The description is empty.");
+            }
 
-            return Task.FromResult<IActionResult>(NotFound("Temporarily GenerateEvaluation")); //temp. 
+            // Optional: Trigger another function called GenerateEvaluation()
+
+            return Ok(new { Description = description });
         }
+
+        public async Task<string> SendDescToDocker(string desc)
+        {
+            _logger.LogInformation("SendDescToDocker has been called.");
+
+            using (var client = new HttpClient())
+            {
+                using (var content = new StringContent(desc))
+                {
+                    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                    var response = await client.PostAsync("http://localhost:5001/predict", content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        _logger.LogInformation($"Response: {responseContent}");
+                        return JsonConvert.DeserializeObject<dynamic>(responseContent).predictions;
+                    }
+                    else
+                    {
+                        _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
+                        return "Error: Could not get a description";
+                    }
+                }
+            }
+        }
+
 
 
         // PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions

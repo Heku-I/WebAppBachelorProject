@@ -39,7 +39,6 @@
                     or click to select one.
                 </p>
                 <input type="file" id="file-input" accept="image/*" style="display: none;" />
-               
             </div>
 
 		
@@ -68,6 +67,7 @@
             <div id="UploadImage"></div> <!--This might need to get removed. Just for debugging atm.-->
 
             <textarea id="Description" hidden></textarea>
+            <div id="evaluationOutput"> </div>
 
         </div>
     </div>
@@ -160,6 +160,8 @@
 
                 //I think we need sources for this code:
 
+                //I little inspired by GPT... Might need too make own code.
+
                 dropArea.addEventListener("dragover", function (e) {
                     e.preventDefault();
                     dropArea.classList.add("border", "border-secondary");
@@ -191,42 +193,60 @@
                     e.stopPropagation();
                 });
 
-                //Showing button only when called.
-                function createGenerateButton() {
 
+                var ButtonManager = {
+    generateButtonContainer: null,
+
+    init: function() {
+        this.generateButtonContainer = document.getElementById("GenerateButtons");
+        this.generateButtonContainer.innerHTML = '';
+        this.generateButtonContainer.classList.add('d-flex', 'justify-content-center', 'mt-3');
+    },
+
+    createGenerateButton: function() {
+        var sendButton = document.createElement('button');
+        sendButton.innerText = 'Generate Description';
+        sendButton.classList.add('btn', 'btn-lg', 'btn-success');
+        sendButton.addEventListener('click', function () {
+            sendImageData();
+        });
+
+        this.generateButtonContainer.appendChild(sendButton);
+    },
+
+    createUploadButton: function() {
+        var uploadButton = document.createElement('button');
+        uploadButton.innerText = 'Save';
+        uploadButton.classList.add('btn', 'btn-dark');
+        uploadButton.addEventListener('click', function () {
+            saveImage();
+        });
+
+        this.generateButtonContainer.appendChild(uploadButton);
+    }
+            };
+
+// Initialize the ButtonManager
+ButtonManager.init();
+
+
+
+                /*function createGenerateButton() {
                     var generateButtonContainer = document.getElementById("GenerateButtons");
                     generateButtonContainer.innerHTML = '';
-
-                    //creating a container for the buttons
                     generateButtonContainer.classList.add('d-flex', 'justify-content-center', 'mt-3');
 
-             
-
-                    //Creating the GenerateButton
                     var sendButton = document.createElement('button');
                     sendButton.innerText = 'Generate Description';
-                    sendButton.classList.add('btn','btn-lg', 'btn-success');
+                    sendButton.classList.add('btn', 'btn-lg', 'btn-success');
                     sendButton.addEventListener('click', function () {
                         sendImageData();
                     });
 
                     generateButtonContainer.appendChild(sendButton);
+                }
 
-
-		}); 
-
-		CreateUploadButton(){
-
-		    var uploadButton = document.createElement('button');
-                    uploadButton.innerText = 'Save';
-                    uploadButton.classList.add('btn', 'btn-dark');
-                    uploadButton.addEventListener('click', function () {
-                        saveImage();
-                    });
-		
-		
-
-                    //Creating the UploadButton
+                function createUploadButton(generateButtonContainer) {
                     var uploadButton = document.createElement('button');
                     uploadButton.innerText = 'Save';
                     uploadButton.classList.add('btn', 'btn-dark');
@@ -234,12 +254,11 @@
                         saveImage();
                     });
 
-
                     generateButtonContainer.appendChild(uploadButton);
-
-                    
                 }
-
+                */
+           
+           
 
                 function previewImage() {
                     var file = fileInput.files[0];
@@ -259,13 +278,15 @@
                             imageData = e.target.result;
                             
                             //To show button
-                            createGenerateButton();
+                           // createGenerateButton();
+                            ButtonManager.createGenerateButton();
+                            
                         };
 
                         reader.readAsDataURL(file);
-                    }
+                    };
 
-                }
+            };
 
 		
 		/* /////////////// -- SENDING MULTIPLE FILES AT A TIME.
@@ -331,9 +352,13 @@
                                 // Display the received description on your page
                                 displayDescription(data.description);
 
-				//Displaying the createUploadButton(); 
-				createUploadButton();
+				//Displaying the createUploadButton();
+                                //createUploadButton(generateButtonContainer);
+                                
+                                ButtonManager.createUploadButton();
 
+
+                            genereteEvaluation(data.description);
 				//Might add something here to hide the "generate button". Not sure on how we want this yet. 
 			
 				
@@ -344,8 +369,8 @@
                             });
                     } else {
                         console.error('No image data to send');
-                    }
-                }
+                    };
+            };
 
 
                 //To display the description on the page. The div-tag is empty and hidden otherwise. 
@@ -362,8 +387,8 @@
 
                     } else {
                         console.error('Element with ID "Description" was not found.');
-                    }
-                }
+                    };
+            };
 
 
                 function saveImage() {
@@ -394,8 +419,47 @@
                             });
                     } else {
                         console.error('No file selected');
-                    }
-                }
+                    };
+            };
+
+            function genereteEvaluation(description) {
+                console.log("reached generate evaluation with " + description);
+                var desc = description
+
+    
+                if (desc) {
+                    var jsonData = { string: desc };
+
+                    fetch('/Image/GetDesc', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(jsonData),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Success:', data);
+                            displayEvaluation(data.description);
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                } else {
+                    console.error('No description data to send');
+                };
+            
+            };
+
+            function displayEvaluation(evaluation) {
+                var output = document.getElementById("evaluationOutput");
+                output.hidden = false;
+                if (output) {
+                    output.innerHTML = evaluation;
+                } else {
+                    console.error('Element with ID "evaluationOutput" was not found.');
+                };
+            };
 
 
 
