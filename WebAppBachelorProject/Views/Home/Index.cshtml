@@ -67,7 +67,7 @@
             <div id="UploadImage"></div> <!--This might need to get removed. Just for debugging atm.-->
 
             <textarea id="Description" hidden></textarea>
-            <div id="evaluationOutput"> </div>
+            <div id="evaluationOutput" hidden> </div>
 
         </div>
     </div>
@@ -194,40 +194,41 @@
                 });
 
 
+
                 var ButtonManager = {
-    generateButtonContainer: null,
+                    generateButtonContainer: null,
 
-    init: function() {
-        this.generateButtonContainer = document.getElementById("GenerateButtons");
-        this.generateButtonContainer.innerHTML = '';
-        this.generateButtonContainer.classList.add('d-flex', 'justify-content-center', 'mt-3');
-    },
+                    init: function() {
+                        this.generateButtonContainer = document.getElementById("GenerateButtons");
+                        this.generateButtonContainer.innerHTML = '';
+                        this.generateButtonContainer.classList.add('d-flex', 'justify-content-center', 'mt-3');
+                    },
 
-    createGenerateButton: function() {
-        var sendButton = document.createElement('button');
-        sendButton.innerText = 'Generate Description';
-        sendButton.classList.add('btn', 'btn-lg', 'btn-success');
-        sendButton.addEventListener('click', function () {
-            sendImageData();
-        });
+                    createGenerateButton: function() {
+                        var sendButton = document.createElement('button');
+                        sendButton.innerText = 'Generate Description';
+                        sendButton.classList.add('btn', 'btn-lg', 'btn-success');
+                        sendButton.addEventListener('click', function () {
+                            sendImageData();
+                        });
 
-        this.generateButtonContainer.appendChild(sendButton);
-    },
+                        this.generateButtonContainer.appendChild(sendButton);
+                    },
 
-    createUploadButton: function() {
-        var uploadButton = document.createElement('button');
-        uploadButton.innerText = 'Save';
-        uploadButton.classList.add('btn', 'btn-dark');
-        uploadButton.addEventListener('click', function () {
-            saveImage();
-        });
+                    createUploadButton: function() {
+                        var uploadButton = document.createElement('button');
+                        uploadButton.innerText = 'Save';
+                        uploadButton.classList.add('btn', 'btn-dark');
+                        uploadButton.addEventListener('click', function () {
+                            saveImage();
+                        });
 
-        this.generateButtonContainer.appendChild(uploadButton);
-    }
-            };
+                        this.generateButtonContainer.appendChild(uploadButton);
+                    }
+                            };
 
-// Initialize the ButtonManager
-ButtonManager.init();
+                // Initialize the ButtonManager
+                ButtonManager.init();
 
 
 
@@ -333,7 +334,7 @@ ButtonManager.init();
 
 		*/
 
-
+                //Sending the image to server to get a description
                 function sendImageData() {
                     var image = fileInput.files[0];
                     if (image) {
@@ -352,14 +353,16 @@ ButtonManager.init();
                                 // Display the received description on your page
                                 displayDescription(data.description);
 
-				//Displaying the createUploadButton();
+                                descriptionOutput = document.getElementById("Description");
+
+                                //Starting the generateEvaluation function.
+                                generateEvaluation();
+
+
+				                //Displaying the createUploadButton();
                                 //createUploadButton(generateButtonContainer);
                                 
                                 ButtonManager.createUploadButton();
-
-
-                            genereteEvaluation(data.description);
-				//Might add something here to hide the "generate button". Not sure on how we want this yet. 
 			
 				
 
@@ -391,6 +394,7 @@ ButtonManager.init();
             };
 
 
+            //Saving the image to the backend (DB and files)
                 function saveImage() {
                     var fileInput = document.getElementById('file-input');
                     if (fileInput.files.length > 0) {
@@ -422,42 +426,48 @@ ButtonManager.init();
                     };
             };
 
-            function genereteEvaluation(description) {
-                console.log("reached generate evaluation with " + description);
-                var desc = description
 
-    
-                if (desc) {
-                    var jsonData = { string: desc };
+            //Running the evalutation.
+                function generateEvaluation() {
+                    var descriptionTextArea = document.getElementById("Description");
+                    var description = descriptionTextArea ? descriptionTextArea.textContent.trim() : '';
 
-                    fetch('/Image/GetDesc', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(jsonData),
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log('Success:', data);
-                            displayEvaluation(data.description);
+                    console.log("reached generate evaluation with : " + description);
+
+                    if (description) {
+                        var jsonData = { desc: description };
+
+                        fetch('/Image/GetEval', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(jsonData),
                         })
-                        .catch((error) => {
-                            console.error('Error:', error);
-                        });
-                } else {
-                    console.error('No description data to send');
-                };
-            
-            };
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Success:', data);
+                                displayEvaluation(data.description)
+                                // Handle response data here
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            });
+                    } else {
+                        console.error('No description data to send');
+                    }
+                }
 
+
+
+            //Displaying the evaluation to the frontend
             function displayEvaluation(evaluation) {
-                var output = document.getElementById("evaluationOutput");
-                output.hidden = false;
-                if (output) {
-                    output.innerHTML = evaluation;
+                    var outputEvaluation = document.getElementById("evaluationOutput");
+                    outputEvaluation.hidden = false;
+                    if (outputEvaluation) {
+                       outputEvaluation.innerHTML = evaluation;
                 } else {
-                    console.error('Element with ID "evaluationOutput" was not found.');
+                        console.error('Element with ID "evaluationOutput" was not found.');
                 };
             };
 

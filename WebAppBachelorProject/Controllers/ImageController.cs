@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using System.Net.Http.Headers;
@@ -126,23 +128,45 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
-        [HttpPost("GetDesc")]
-        public async Task<IActionResult> GetDesc([FromBody] string desc)
+        public class EvaluationRequest
         {
-            _logger.LogInformation("ImageController: GetDesc has been called.");
-
-            var description = await SendDescToDocker(desc);
-
-            if (string.IsNullOrWhiteSpace(description))
-            {
-                return NotFound("The description is empty.");
-            }
-
-            // Optional: Trigger another function called GenerateEvaluation()
-
-            return Ok(new { Description = description });
+            public string Desc { get; set; }
         }
 
+
+
+        [HttpPost("GetEval")]
+        public async Task<IActionResult> GetEvaluation([FromBody] EvaluationRequest request)
+        {
+            _logger.LogInformation(request.Desc);
+            _logger.LogInformation("ImageController: GetEvaluation has been called.");
+
+            if (request != null && !string.IsNullOrWhiteSpace(request.Desc))
+            {
+                var description = await SendDescToDocker(request.Desc);
+
+                if (string.IsNullOrWhiteSpace(description))
+                {
+                    return NotFound("The description is empty.");
+                }
+
+                return Ok(new { Description = description });
+            }
+            else
+            {
+                return BadRequest("Invalid request payload.");
+            }
+        }
+
+
+
+
+
+        /// <summary>
+        /// Sending the description to the docker
+        /// </summary>
+        /// <param name="desc"></param>
+        /// <returns>Returning the evaluation</returns>
         public async Task<string> SendDescToDocker(string desc)
         {
             _logger.LogInformation("SendDescToDocker has been called.");
@@ -153,21 +177,32 @@ namespace WebAppBachelorProject.Controllers
                 {
                     content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
-                    var response = await client.PostAsync("http://localhost:5001/predict", content);
+                    var response = await client.PostAsync("http://localhost:5005/predict", content);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         _logger.LogInformation($"Response: {responseContent}");
+
                         return JsonConvert.DeserializeObject<dynamic>(responseContent).predictions;
                     }
                     else
                     {
                         _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
-                        return "Error: Could not get a description";
+                        return "Error: Could not get the evaluation";
                     }
                 }
             }
         }
+
+
+
+
+
+
+
+
+
+
 
 
 
