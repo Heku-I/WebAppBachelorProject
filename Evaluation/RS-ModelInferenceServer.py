@@ -32,22 +32,23 @@ inferencer = IMGAccessInferencer('tokenizer.pkl', 'models')
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Get description from the request
-    data = request.get_json()
-    description = data.get('description', "")
-
-    if not description:
-        return jsonify({'error': 'No description provided'}), 400
-
-    # Make prediction
-    desc = [description]
-    preds = inferencer.predict(desc)
-
-    # Return predictions
-    return jsonify({'predictions': preds})
+    try: 
+        # Get description from the request
+        data = request.get_json()
+        description = data.get('description', "")
+    
+        if not description:
+            return jsonify({'error': 'No description provided'}), 400
+    
+        # Make prediction
+        desc = [description]
+        preds = inferencer.predict(desc)
+    
+        # Return predictions
+        return jsonify({'predictions': preds})
     
 # Added this for debugging purposes.
-except Exception as e:
+    except Exception as e:
         # Log the exception
         print("An error occurred:", e)
         return jsonify({'error': 'An error occurred while processing the request'}), 500
