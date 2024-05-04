@@ -45,6 +45,12 @@ def predict():
 
     # Return predictions
     return jsonify({'predictions': preds})
+    
+# Added this for debugging purposes.
+except Exception as e:
+        # Log the exception
+        print("An error occurred:", e)
+        return jsonify({'error': 'An error occurred while processing the request'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5005)
