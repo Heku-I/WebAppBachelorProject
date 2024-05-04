@@ -427,7 +427,7 @@
             };
 
 
-            //Running the evalutation.
+                //Running the evalutation.
                 function generateEvaluation() {
                     var descriptionTextArea = document.getElementById("Description");
                     var description = descriptionTextArea ? descriptionTextArea.textContent.trim() : '';
@@ -435,7 +435,7 @@
                     console.log("reached generate evaluation with : " + description);
 
                     if (description) {
-                        var jsonData = { desc: description };
+                        var jsonData = { description: description };
 
                         fetch('/Image/GetEval', {
                             method: 'POST',
@@ -447,8 +447,7 @@
                             .then(response => response.json())
                             .then(data => {
                                 console.log('Success:', data);
-                                displayEvaluation(data.description)
-                                // Handle response data here
+                                displayEvaluation(data.predictions)
                             })
                             .catch((error) => {
                                 console.error('Error:', error);
@@ -465,7 +464,7 @@
                     var outputEvaluation = document.getElementById("evaluationOutput");
                     outputEvaluation.hidden = false;
                     if (outputEvaluation) {
-                       outputEvaluation.innerHTML = evaluation;
+                       outputEvaluation.innerHTML = "The evaluation of the image: " + evaluation;
                 } else {
                         console.error('Element with ID "evaluationOutput" was not found.');
                 };

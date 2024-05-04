@@ -7,6 +7,7 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text;
 using WebAppBachelorProject.DAL;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
@@ -130,7 +131,7 @@ namespace WebAppBachelorProject.Controllers
 
         public class EvaluationRequest
         {
-            public string Desc { get; set; }
+            public string Description { get; set; }
         }
 
 
@@ -138,19 +139,21 @@ namespace WebAppBachelorProject.Controllers
         [HttpPost("GetEval")]
         public async Task<IActionResult> GetEvaluation([FromBody] EvaluationRequest request)
         {
-            _logger.LogInformation(request.Desc);
+            _logger.LogInformation(request.Description);
             _logger.LogInformation("ImageController: GetEvaluation has been called.");
 
-            if (request != null && !string.IsNullOrWhiteSpace(request.Desc))
+            if (request != null && !string.IsNullOrWhiteSpace(request.Description))
             {
-                var description = await SendDescToDocker(request.Desc);
+                var predictions = await SendDescToDocker(request.Description);
 
-                if (string.IsNullOrWhiteSpace(description))
+                if (predictions != null)
                 {
-                    return NotFound("The description is empty.");
+                    return Ok(new { Predictions = predictions });
                 }
-
-                return Ok(new { Description = description });
+                else
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get predictions from Docker.");
+                }
             }
             else
             {
@@ -167,32 +170,34 @@ namespace WebAppBachelorProject.Controllers
         /// </summary>
         /// <param name="desc"></param>
         /// <returns>Returning the evaluation</returns>
-        public async Task<string> SendDescToDocker(string desc)
+        public async Task<List<List<double>>> SendDescToDocker(string desc)
         {
             _logger.LogInformation("SendDescToDocker has been called.");
 
             using (var client = new HttpClient())
             {
-                using (var content = new StringContent(desc))
-                {
-                    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                var requestData = new { description = desc };
+                var jsonContent = JsonConvert.SerializeObject(requestData);
 
+                using (var content = new StringContent(jsonContent, Encoding.UTF8, "application/json"))
+                {
                     var response = await client.PostAsync("http://localhost:5005/predict", content);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         _logger.LogInformation($"Response: {responseContent}");
 
-                        return JsonConvert.DeserializeObject<dynamic>(responseContent).predictions;
+                        return JsonConvert.DeserializeObject<JObject>(responseContent)["predictions"].ToObject<List<List<double>>>();
                     }
                     else
                     {
                         _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
-                        return "Error: Could not get the evaluation";
+                        return null;
                     }
                 }
             }
         }
+
 
 
 
