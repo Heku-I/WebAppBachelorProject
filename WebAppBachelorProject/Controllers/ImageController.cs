@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp.Formats;
@@ -112,7 +111,7 @@ namespace WebAppBachelorProject.Controllers
                     imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
                     content.Add(imageContent, "image", "upload.jpg");
 
-                    var response = await client.PostAsync("http://localhost:5000/predict", content);
+                    var response = await client.PostAsync("http://imageable.hrf7gefrewh3e0f2.northeurope.azurecontainer.io:5000/predict", content);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
@@ -181,7 +180,7 @@ namespace WebAppBachelorProject.Controllers
 
                 using (var content = new StringContent(jsonContent, Encoding.UTF8, "application/json"))
                 {
-                    var response = await client.PostAsync("http://localhost:5005/predict", content);
+                    var response = await client.PostAsync("http://evaluation-model.b2dqejhrezexe4gj.northeurope.azurecontainer.io:5005/predict", content);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
