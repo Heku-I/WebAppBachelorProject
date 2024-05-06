@@ -41,6 +41,25 @@ namespace WebAppBachelorProject.Controllers
 
             return View(images);
         }
+        /* Commented our for now.. may be buggy and needs error handling
+        [HttpPost]
+        public IActionResult searchImages(DateOnly? fromDate, DateOnly? toDate, string description)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var query = _context.Images.Where(i => i.UserId == userId);
+
+            if (!string.IsNullOrEmpty(description))
+                query = query.Where(i => i.Description.Contains(description));
+            if (fromDate.HasValue)
+                query = query.Where(i => i.DateCreated >= fromDate.Value);
+            if (toDate.HasValue)
+                query = query.Where(i => i.DateCreated <= toDate.Value);
+            var images = query.ToList();
+            return View(images);
+
+
+        }
+        */
 
 
 
