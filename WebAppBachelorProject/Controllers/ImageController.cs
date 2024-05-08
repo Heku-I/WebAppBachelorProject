@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
+using System.Collections;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using WebAppBachelorProject.DAL;
@@ -35,60 +38,71 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-        /// <summary>
-        /// This function will recieve the image from the frontend and check if image is receieved and is OK.
-        /// </summary>
-        /// <returns>Sends it further in the process.</returns>
-        [HttpPost("GetImage")]
-        public async Task<IActionResult> GetImage([FromBody] ImageDTO imageTransfer)
+
+        //MULTIPLE IMAGES UPDATE:
+        [HttpPost("GetMultipleImages")]
+        public async Task<IActionResult> GetMultipleImages([FromBody] ImageUploadRequest request)
         {
-            _logger.LogInformation("ImageController: GetImage has been called.");
+            List<string> descriptions = new List<string>();
 
-            var base64Data = imageTransfer.ImageBase64.Split(',')[1]; // Removing the data:image/png;base64, part
-            var imageBytes = Convert.FromBase64String(base64Data);
-
-            _logger.LogInformation($"Image: {imageBytes}");
-
-            var description = await SendImageToDocker(imageBytes);
-
-            if (string.IsNullOrWhiteSpace(description))
+            foreach (string base64String in request.ImageBase64Array)
             {
-                return NotFound("The description is empty.");
+                // Convert the Base64 string to a byte array
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+
+                // Pass the byte array to the ML model for prediction
+                string description = await SendImageToDocker(imageBytes);
+                descriptions.Add(description);
             }
 
-            // Optional: Trigger another function called GenerateEvaluation()
+            _logger.LogInformation($"Description Array: {descriptions.ToString()} "); 
 
-            return Ok(new { Description = description });
+            return Ok(new { Descriptions = descriptions });
         }
 
 
-        /*Commenting out becuase not sure if working yet:
 
-            /// Function for the multimedia: 
 
-            public async Task<IActionResult> GetMultipleImages ([FromBody] ImageDTO imageTransfer){
+        public async Task<List<string>> SendImagesToDockerMultiple(List<byte[]> imageBytesList)
+        {
+            _logger.LogInformation("SendImagesToDocker has been called.");
 
-            _logger_LogInformation("ImageController: function GetMultipleImages is called"); 
+            List<string> descriptions = new List<string>();
 
-            //Getting each file.
-            foreach(var file in uploadfile.FormFile){
-                //Checking if the file is empty.
-                //Should maybe check the file format here too.
-                if(file.length>0){
+            foreach (var imageBytes in imageBytesList)
+            {
+                using (var client = new HttpClient())
+                {
+                    using (var content = new MultipartFormDataContent())
+                    {
+                        // Create ByteArrayContent from image bytes, and add to form data content
+                        var imageContent = new ByteArrayContent(imageBytes);
+                        imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                        content.Add(imageContent, "image", "upload.jpg");
 
-                var base64Data = imageTransfer.ImageBase64.Split(',')[1]; // Removing the data:image/png;base64, part
-                        var imageBytes = Convert.FromBase64String(base64Data);
-
-                    //Maybe call the SendImageToDcoker here, not sure. 
-                    SendImageToDocker(imageBytes);	
+                        var response = await client.PostAsync("http://localhost:5000/predict", content);
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var responseContent = await response.Content.ReadAsStringAsync();
+                            _logger.LogInformation($"Response: {responseContent}");
+                            descriptions.Add(JsonConvert.DeserializeObject<dynamic>(responseContent).caption);
+                        }
+                        else
+                        {
+                            _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
+                            descriptions.Add("Error: Could not get a description");
+                        }
+                    }
                 }
             }
 
+            return descriptions;
+        }
 
-            }
 
 
-        */
+
+
 
 
         /// <summary>
@@ -112,7 +126,7 @@ namespace WebAppBachelorProject.Controllers
                     imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
                     content.Add(imageContent, "image", "upload.jpg");
 
-                    var response = await client.PostAsync("http://localhost:5000/predict", content);
+                    var response = await client.PostAsync("http://imageable.hrf7gefrewh3e0f2.northeurope.azurecontainer.io:5000/predict", content);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
@@ -131,27 +145,33 @@ namespace WebAppBachelorProject.Controllers
 
         public class EvaluationRequest
         {
-            public string Description { get; set; }
+            public List<string> description { get; set; }
         }
-
 
 
         [HttpPost("GetEval")]
         public async Task<IActionResult> GetEvaluation([FromBody] EvaluationRequest request)
         {
-            _logger.LogInformation(request.Description);
             _logger.LogInformation("ImageController: GetEvaluation has been called.");
 
-            if (request != null && !string.IsNullOrWhiteSpace(request.Description))
+            if (request != null && request.description != null && request.description.Any())
             {
-                var predictions = await SendDescToDocker(request.Description);
+                var predictions = await SendDescToDocker(request.description);
 
                 if (predictions != null)
                 {
-                    return Ok(new { Predictions = predictions });
+                    _logger.LogInformation("Predictions:");
+                    foreach (var prediction in predictions)
+                    {
+                        _logger.LogInformation($"{string.Join(",", prediction)}"); // Log each prediction as a comma-separated string
+                    }
+
+                    // Return predictions to the client in a structured format
+                    return Ok(predictions.SelectMany(p => p).ToList());
                 }
                 else
                 {
+                    _logger.LogError("Predictions are null or empty.");
                     return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get predictions from Docker.");
                 }
             }
@@ -162,48 +182,209 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
-
-
-
-        /// <summary>
-        /// Sending the description to the docker
-        /// </summary>
-        /// <param name="desc"></param>
-        /// <returns>Returning the evaluation</returns>
-        public async Task<List<List<double>>> SendDescToDocker(string desc)
+        public async Task<List<List<double>>> SendDescToDocker(List<string> descriptions)
         {
             _logger.LogInformation("SendDescToDocker has been called.");
 
+            List<List<double>> allPredictions = new List<List<double>>();
+
             using (var client = new HttpClient())
             {
-                var requestData = new { description = desc };
-                var jsonContent = JsonConvert.SerializeObject(requestData);
-
-                using (var content = new StringContent(jsonContent, Encoding.UTF8, "application/json"))
+                foreach (var desc in descriptions)
                 {
-                    var response = await client.PostAsync("http://localhost:5005/predict", content);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        _logger.LogInformation($"Response: {responseContent}");
+                    var requestData = new { description = desc };
+                    var jsonContent = JsonConvert.SerializeObject(requestData);
 
-                        return JsonConvert.DeserializeObject<JObject>(responseContent)["predictions"].ToObject<List<List<double>>>();
-                    }
-                    else
+                    using (var content = new StringContent(jsonContent, Encoding.UTF8, "application/json"))
                     {
-                        _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
-                        return null;
+                        var response = await client.PostAsync("http://evaluation-model.b2dqejhrezexe4gj.northeurope.azurecontainer.io:5005/predict", content);
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var responseContent = await response.Content.ReadAsStringAsync();
+                            _logger.LogInformation($"Response for description '{desc}': {responseContent}");
+
+                            var responseData = JsonConvert.DeserializeObject<JObject>(responseContent);
+                            if (responseData?["predictions"] != null)
+                            {
+                                var predictions = responseData["predictions"].ToObject<List<List<double>>>();
+                                allPredictions.AddRange(predictions);
+                            }
+                            else
+                            {
+                                _logger.LogError($"Failed to get predictions for description '{desc}' from response. Response content: {responseContent}");
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogError($"Failed to get a response for description '{desc}', status code: {response.StatusCode}");
+                        }
                     }
                 }
             }
+
+            return allPredictions;
+        }
+
+        /*
+
+        THIS IS WORKING!!!
+
+        [Authorize] //Used has to be logged in. 
+        [HttpPost("SaveMeta")]
+        public async Task<IActionResult> SaveMetadataToImages(
+            
+            [FromForm(Name = "imageFiles")] List<IFormFile> imageFiles,
+            [FromForm(Name = "descriptions")] List<string> descriptions,
+            [FromForm(Name = "evaluations")] List<string> evaluations
+            )
+        {
+            _logger.LogInformation("ImageController: SaveMetadataToImages has been called.");
+
+
+
+            _logger.LogInformation($"Received {imageFiles.Count} images.");
+            if (imageFiles.Count > 0)
+            {
+                _logger.LogInformation($"First image filename: {imageFiles[0].FileName}");
+            }
+
+
+            if (imageFiles == null || imageFiles.Count == 0)
+            {
+                _logger.LogError("No images provided.");
+                return BadRequest("No images provided.");
+            }
+
+            if (descriptions == null || descriptions.Count != imageFiles.Count)
+            {
+                _logger.LogError("Descriptions count does not match images count.");
+                return BadRequest("Descriptions count does not match images count.");
+            }
+
+            if (evaluations == null || evaluations.Count != imageFiles.Count)
+            {
+                _logger.LogError("Evaluations count does not match images count.");
+                return BadRequest("Evaluations count does not match images count.");
+            }
+
+            for (int i = 0; i < imageFiles.Count; i++)
+            {
+                var imageFile = imageFiles[i];
+                var description = descriptions[i];
+                var evaluation = evaluations[i];
+
+                _logger.LogInformation($"Found description: {description}");
+                _logger.LogInformation($"Found evaluation: {evaluation}");
+
+                string fileName = Path.GetFileName(imageFile.FileName);
+                string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                string fullPath = Path.Combine(folderPath, fileName);
+
+                try
+                {
+                    using (var imageStream = imageFile.OpenReadStream())
+                    {
+                        IImageFormat format = ImageSharpImage.DetectFormat(imageStream);
+                        _logger.LogInformation($"Detected format: {format.Name}");
+                        imageStream.Position = 0;
+
+                        using (var image = ImageSharpImage.Load(imageStream))
+                        {
+                            var metadata = image.Metadata.ExifProfile ?? new ExifProfile();
+                            metadata.SetValue(ExifTag.ImageDescription, description);
+
+                            await using (var outputFileStream = new FileStream(fullPath, FileMode.Create))
+                            {
+                                image.Save(outputFileStream, format);
+                            }
+                        }
+                    }
+                    _logger.LogInformation($"Image has been saved successfully. Sending to ImageToDB(desc, path, eval)");
+                    //await ImageToDB(description, fullPath, evaluation); // Ensure ImageToDB can handle evaluation parameter
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"An error occurred while processing image {fileName}: {ex.Message}");
+                    return StatusCode(500, $"An error occurred while processing the image: {ex.Message}");
+                }
+            }
+
+            return Ok(new { message = "All images have been successfully saved and processed." });
+        }
+
+
+        */
+
+
+
+        private ImageSharpImage AddMetadataToImage(IFormFile imageFile, string description, string evaluation)
+        {
+            _logger.LogInformation("ImageController: AddMetadataToImage has been called.");
+
+            var imageStream = imageFile.OpenReadStream();
+            var format = ImageSharpImage.DetectFormat(imageStream);
+            _logger.LogInformation($"Detected format: {format.Name}");
+            imageStream.Position = 0;  // Reset stream position after format detection
+
+            var image = ImageSharpImage.Load(imageStream);
+
+            var metadata = image.Metadata.ExifProfile ?? new ExifProfile();
+            metadata.SetValue(ExifTag.ImageDescription, description);
+            image.Metadata.ExifProfile = metadata;
+            // Add more metadata as needed
+
+            _logger.LogInformation("Metadata is added, returning image.");
+
+            return image;  // Return the modified image for further use
         }
 
 
 
+        [Authorize]
+        [HttpPost("SaveImage")]
+        public async Task<IActionResult> SaveImageToFolder(
+            [FromForm(Name = "imageFiles")] List<IFormFile> imageFiles,
+            [FromForm(Name = "descriptions")] List<string> descriptions,
+            [FromForm(Name = "evaluations")] List<string> evaluations)
+        {
+            _logger.LogInformation("ImageController: SaveImageToFolder has been called.");
 
+            for (int i = 0; i < imageFiles.Count; i++)
+            {
+                var imageFile = imageFiles[i];
+                var description = descriptions[i];
+                var evaluation = evaluations[i];
 
+                _logger.LogInformation($"Processing image {i}");
 
+                string fileName = Path.GetFileName(imageFile.FileName);
+                string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                string fullPath = Path.Combine(folderPath, fileName);
 
+                try
+                {
+                    using (var image = AddMetadataToImage(imageFile, description, evaluation))
+                    {
+                        await using (var outputFileStream = new FileStream(fullPath, FileMode.Create))
+                        {
+                            image.Save(outputFileStream, ImageSharpImage.DetectFormat(imageFile.OpenReadStream()));
+                        }
+                    }
+
+                    CheckImageMetadata(fullPath); 
+
+                    _logger.LogInformation($"Image has been saved successfully. Sending to ImageToDB(desc, path, eval)");
+                    //await ImageToDB(description, fullPath, evaluation); // Ensure ImageToDB can handle evaluation parameter
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"An error occurred while processing image {fileName}: {ex.Message}");
+                    return StatusCode(500, $"An error occurred while processing the image: {ex.Message}");
+                }
+            }
+
+            return Ok(new { message = "All images have been successfully saved and processed." });
+        }
 
 
 
@@ -226,6 +407,9 @@ namespace WebAppBachelorProject.Controllers
         /// <param name="imageFile"></param>
         /// <param name="description"></param>
         /// <returns>Sends to ImageToDB() to save it to database. </returns>
+        /*
+         * OLD ONE
+         * 
         [Authorize]
         [HttpPost("SaveMeta")]
         public async Task<IActionResult> SaveMetadataToImage([FromForm] IFormFile imageFile, [FromForm] string description)
@@ -298,12 +482,12 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
+        */
 
 
 
 
-        /* FUNCTION JUST TO SEE THE METADATA. TO BE DELTED. 
-         
+
         public void CheckImageMetadata(string imagePath)
         {
             using (var image = ImageSharpImage.Load(imagePath))
@@ -326,12 +510,6 @@ namespace WebAppBachelorProject.Controllers
                 }
             }
         }
-
-        */
-
-
-
-
 
 
 
@@ -358,7 +536,7 @@ namespace WebAppBachelorProject.Controllers
             {
                 // Generate a filename
                 var filename = $"image_{DateTime.Now:yyyyMMddHHmmss}.jpg";
-                
+
 
                 var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", filename);
                 _logger.LogInformation($"Attempting to save the image on the following path: {path}");
@@ -387,7 +565,7 @@ namespace WebAppBachelorProject.Controllers
         /// <returns>Success or false</returns>
         /// 
         [Authorize]
-        public async Task<IActionResult> ImageToDB(string description, string path)
+        public async Task<IActionResult> ImageToDB(string description, string path, string evaluation)
         {
             _logger.LogInformation("ImageController: ImageToDB is reached.");
 

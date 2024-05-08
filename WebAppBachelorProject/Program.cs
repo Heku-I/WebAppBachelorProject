@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using WebAppBachelorProject.Areas.Identity.Data;
 using WebAppBachelorProject.DAL;
@@ -27,6 +28,13 @@ builder.Services.AddDefaultIdentity<WebAppBachelorProjectUser>(options => option
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IImageRepository, ImageRepository>();
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = int.MaxValue; // Set the limit for the length of each multipart body
+    options.MemoryBufferThreshold = int.MaxValue;
+});
 
 
 var app = builder.Build();
