@@ -325,7 +325,7 @@ namespace WebAppBachelorProject.Controllers
                     CheckImageMetadata(fullPath); 
 
                     _logger.LogInformation($"Image has been saved successfully. Sending to ImageToDB(desc, path, eval)");
-                    //await ImageToDB(description, fullPath, evaluation); // Ensure ImageToDB can handle evaluation parameter
+                    await ImageToDB(description, fullPath, evaluation);
                 }
                 catch (Exception ex)
                 {
@@ -398,13 +398,17 @@ namespace WebAppBachelorProject.Controllers
                 return Forbid(); //You should not be able to register an image to DB if you are not logged in. 
             }
 
+            var dateCreated = DateTime.Today; 
+
             Models.Image image = new Models.Image
             {
                 Description = description,
                 ImagePath = path,
-                UserId = userId
+                UserId = userId,
+                DateCreated = dateCreated,
+                Evaluation = evaluation
+                
             };
-
 
             //Loggers for debugging: 
             _logger.LogInformation($"The description of the image is: {image.Description}");
@@ -425,6 +429,7 @@ namespace WebAppBachelorProject.Controllers
                             $"ImageId: {image.ImageId}\n" +
                             $"Description: {image.Description}\n" +
                             $"ImagePath:{image.ImagePath}\n" +
+                            $"DateCreated:{image.DateCreated}\n" +
                             $"User: {image.UserId}");
 
                         var response = new Responses { Success = true, Message = $"Image created successfully" };

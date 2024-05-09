@@ -20,9 +20,11 @@ namespace WebAppBachelorProject.Models
         //One-to-Many relationship.
         public string UserId { get; set; }
 
-        public DateOnly DateCreated { get; set; }
+        public DateTime DateCreated { get; set; }
 
         //We also need to add an attribute for evaluation. 
+
+        public string Evaluation {  get; set; }
 
 
         //Navigation Properties: 
