@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
-using System.Collections;
+using System.IO;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using WebAppBachelorProject.DAL;
@@ -98,10 +95,6 @@ namespace WebAppBachelorProject.Controllers
 
             return descriptions;
         }
-
-
-
-
 
 
 
@@ -316,7 +309,8 @@ namespace WebAppBachelorProject.Controllers
         */
 
 
-
+        //PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions
+        //USING IMAGESHARP - DOCUMENTATION https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Exif.html
         private ImageSharpImage AddMetadataToImage(IFormFile imageFile, string description, string evaluation)
         {
             _logger.LogInformation("ImageController: AddMetadataToImage has been called.");
@@ -330,7 +324,10 @@ namespace WebAppBachelorProject.Controllers
 
             var metadata = image.Metadata.ExifProfile ?? new ExifProfile();
             metadata.SetValue(ExifTag.ImageDescription, description);
+            metadata.SetValue(ExifTag.UserComment, evaluation);
             image.Metadata.ExifProfile = metadata;
+            
+
             // Add more metadata as needed
 
             _logger.LogInformation("Metadata is added, returning image.");
@@ -391,103 +388,7 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-
-        // PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions
-        //USING IMAGESHARP - DOCUMENTATION https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Exif.html
-
-        /// <summary>
-        /// Getting request from client, function saveImage() from form.
-        /// Checking if a description is provided. 
-        /// Checking if image is procided.
-        /// Sets the path.
-        /// Detects the format on the image.
-        /// Sets the description as a metadata
-        /// Saves the image on the path
-        /// </summary>
-        /// <param name="imageFile"></param>
-        /// <param name="description"></param>
-        /// <returns>Sends to ImageToDB() to save it to database. </returns>
-        /*
-         * OLD ONE
-         * 
-        [Authorize]
-        [HttpPost("SaveMeta")]
-        public async Task<IActionResult> SaveMetadataToImage([FromForm] IFormFile imageFile, [FromForm] string description)
-        {
-            _logger.LogInformation("ImageController: SaveMetadataToImage has been called.");
-
-
-            //Error logging on the required function parameter inputs.
-            if (string.IsNullOrEmpty(description))
-            {
-                _logger.LogError("No description provided.");
-                return BadRequest("No description provided.");
-            }
-            else
-            {
-                _logger.LogInformation($"Found description: {description}");
-            }
-
-            if (imageFile == null)
-            {
-                _logger.LogError("No image provided.");
-                return BadRequest("No image provided.");
-            }
-            else
-            {
-                _logger.LogInformation("Found Image.}");
-
-            }
-
-            // Determine the path (wwwroot/uplads) - Open to change. 
-            string fileName = Path.GetFileName(imageFile.FileName);
-            string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-            string fullPath = Path.Combine(folderPath, fileName);
-
-
-            try
-            {
-                //Accessing the file's content to read/process
-                using (var imageStream = imageFile.OpenReadStream())
-                {
-                    //Getting the format with ImageSharp.DetectFormat. We later going to use this to save the image w/ the same format. 
-                    IImageFormat format = ImageSharpImage.DetectFormat(imageStream);
-                    _logger.LogInformation($"{format}"); //Debugging purposes.
-                    imageStream.Position = 0;
-
-                    //Loads the image from imageStream into an ImageSharp-object.
-                    using (var image = ImageSharpImage.Load(imageStream))
-                    {
-                        //Getting the metadata & Inserting the description into "ImageDescription"-metadata. 
-                        var metadata = image.Metadata.ExifProfile ?? new ExifProfile();
-                        metadata.SetValue(ExifTag.ImageDescription, description);
-                        image.Metadata.ExifProfile = metadata;
-
-                        //Saving the image
-                        await using (var outputFileStream = new FileStream(fullPath, FileMode.Create))
-                        {
-                            image.Save(outputFileStream, format);
-
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while processing the image: {ex.Message}");
-            }
-            _logger.LogInformation("Image has been saved successfully. Sending to ImageToDB(desc, path)");
-            return await ImageToDB(description, fullPath); //For 
-
-        }
-
-
-        */
-
-
-
-
-
+        //Used only for debugging purposes!
         public void CheckImageMetadata(string imagePath)
         {
             using (var image = ImageSharpImage.Load(imagePath))
@@ -511,52 +412,6 @@ namespace WebAppBachelorProject.Controllers
             }
         }
 
-
-
-        /*
-        /// <summary>
-        /// Saving image to a folder. 
-        /// User must be logged in. 
-        /// </summary>
-        /// <returns>The folder path</returns>
-        ///
-        [Authorize]
-        public async Task<IActionResult> SaveImage(Bitmap image, string description )
-        {
-            _logger.LogInformation("ImageController: SaveImage has been called.");
-
-            if (description == null)
-            {
-                _logger.LogError("No description provided.");
-                return BadRequest("No description provided.");
-            }
-            else { _logger.LogInformation($"The description is: {description} ");}
-
-            if (image != null)
-            {
-                // Generate a filename
-                var filename = $"image_{DateTime.Now:yyyyMMddHHmmss}.jpg";
-
-
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads", filename);
-                _logger.LogInformation($"Attempting to save the image on the following path: {path}");
-
-                // Save the bitmap to the path
-                image.Save(path, ImageFormat.Jpeg);
-
-                // Optionally, here you can call another function to save image details to DB
-                // return await ImageToDB(image, description, path);
-
-                return await ImageToDB(image, description, path);
-
-            }
-            else
-            {
-                _logger.LogError("ImageController: Error. Image has not been saved.");
-                return BadRequest(new { Success = false, Message = "Invalid image." });
-            }
-        }
-        */
 
 
         /// <summary>
@@ -640,6 +495,61 @@ namespace WebAppBachelorProject.Controllers
                 return StatusCode(500, new Responses { Success = false, Message = ex.Message });
             }
         }
+
+
+
+
+
+        /// <summary>
+        /// Processes an uploaded image file by adding metadata the following metadata: description and evaluation of the description. 
+        /// and returns the modified image as a downloadable file.
+        /// </summary>
+        /// <param name="imageFile">The image file uploaded by the user. Should contain image data. Should not be null.</param>
+        /// <param name="description">The description to be added into the image's metadata. Provides additional context to the image.</param>
+        /// <param name="evaluation">The evaluation of the description to be added into the image's metadata. Provides trust if the description is good.</param>
+        /// <returns>Returns a FileContentResult containing the modified image with metadata as a downloadable file. 
+        /// If an error occurs, it returns an appropriate HTTP status code with error details.
+        /// </returns>
+        [HttpPost("DownloadImageWithMetadata")]
+        public async Task<IActionResult> DownloadImageWithMetadata([FromForm] IFormFile imageFile, [FromForm] string description, [FromForm] string evaluation)
+        {
+            _logger.LogInformation("ImageController: DownloadImageWithMetadata is reached.");
+
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                return BadRequest("No image file provided.");
+            }
+
+            try
+            {
+                using var imageStream = imageFile.OpenReadStream();
+                var format = ImageSharpImage.DetectFormat(imageStream);  // Detect the format using the stream
+                if (format == null)
+                {
+                    _logger.LogError("Unsupported image format.");
+                    return BadRequest("Unsupported image format.");
+                }
+
+                imageStream.Position = 0;  // Reset the stream position after detecting the format
+
+                // Use the existing function to add metadata to the image
+                using var image = AddMetadataToImage(imageFile, description, evaluation);
+                var memoryStream = new MemoryStream();
+
+                image.Save(memoryStream, format);  // Save the image with metadata to memory stream
+                memoryStream.Position = 0;  // Reset the position of the memory stream to enable file download
+
+                string mimeType = format.DefaultMimeType;  // Dynamically determine the MIME type
+                return File(memoryStream.ToArray(), mimeType, Path.GetFileName(imageFile.FileName));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error while processing image download: {ex.Message}");
+                return StatusCode(500, "Error processing your download.");
+            }
+        }
+
+
 
 
 

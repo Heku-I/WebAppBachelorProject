@@ -194,45 +194,6 @@
 
 
 
-
-                //I think we need sources for this code:
-
-                //I little inspired by GPT... Might need too make own code.
-
-                //Not sure if we really need this, dont understand what it is. 
-
-                /*
-                dropArea.addEventListener("dragover", function (e) {
-                    e.preventDefault();
-                    dropArea.classList.add("border", "border-secondary");
-                });
-
-                dropArea.addEventListener("dragleave", function () {
-                    dropArea.classList.remove("border", "border-secondary");
-                });
-
-                dropArea.addEventListener("drop", function (e) {
-                    e.preventDefault();
-                    dropArea.classList.remove("border", "border-secondary");
-
-                    var files = e.dataTransfer.files;
-
-                    if (files.length > 0) {
-                        file_Input.files = files;
-                        previewImage();
-                    }
-                });
-
-                dropArea.addEventListener("click", function () {
-                    file_Input.click();
-                });
-
-                file_Input.addEventListener("click", function (e) {
-                    e.stopPropagation();
-                });
-                */
-
-
                 var ButtonManager = {
                     generateButtonContainer: null,
 
@@ -265,51 +226,12 @@
                         this.generateButtonContainer.appendChild(uploadButton);
                     },
 
-                    createDownloadButton: function () {
-                        var uploadButton = document.createElement('button');
-                        uploadButton.innerText = 'Download w/ metadata';
-                        uploadButton.classList.add('btn', 'btn-dark');
-                        uploadButton.addEventListener('click', function () {
-                            downloadImage();
-                        });
-
-                        this.generateButtonContainer.appendChild(downloadImage);
-                    }
                 };
 
                 // Initialize the ButtonManager
                 ButtonManager.init();
 
 
-
-                ///TO BE REMOVED:
-
-                /*function createGenerateButton() {
-                    var generateButtonContainer = document.getElementById("GenerateButtons");
-                    generateButtonContainer.innerHTML = '';
-                    generateButtonContainer.classList.add('d-flex', 'justify-content-center', 'mt-3');
-
-                    var sendButton = document.createElement('button');
-                    sendButton.innerText = 'Generate Description';
-                    sendButton.classList.add('btn', 'btn-lg', 'btn-success');
-                    sendButton.addEventListener('click', function () {
-                        sendImageData();
-                    });
-
-                    generateButtonContainer.appendChild(sendButton);
-                }
-
-                function createUploadButton(generateButtonContainer) {
-                    var uploadButton = document.createElement('button');
-                    uploadButton.innerText = 'Save';
-                    uploadButton.classList.add('btn', 'btn-dark');
-                    uploadButton.addEventListener('click', function () {
-                        saveImage();
-                    });
-
-                    generateButtonContainer.appendChild(uploadButton);
-                }
-                */
 
                 //https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/insertRow //Inserting table  rows
 
@@ -379,6 +301,7 @@
                 }
 
 
+
                 function sendMultipleImageData() {
                     var imageFiles = file_Input.files;
 
@@ -414,6 +337,7 @@
                                             // Display the received description on your page
                                             displayDescription(data.descriptions);
                                             generateEvaluation(); //Running the evaluation
+                                            displayDownloadButtons()
 
                                             ButtonManager.createUploadButton(); //Need to change this!!
                                         })
@@ -450,6 +374,13 @@
                         }
                     }
                 }
+
+
+
+
+
+
+
 
 
                 // Saving multiple images with descriptions and evaluations to the backend in a single request
@@ -528,10 +459,10 @@
                             .then(response => response.json())
 
                             .then(data => {
-                                console.log('Received data:', data); // Log the entire data object (SHOULD EB REMOVED.)
+                                console.log('Received data:', data); // Log the entire data object (SHOULD BE REMOVED.)
 
                                 if (data && data.length > 0) {
-                                    displayEvaluation(data); 
+                                    displayEvaluation(data);
 
                                 } else {
                                     console.log('Predictions data is null or empty');
@@ -554,7 +485,7 @@
 
                     // Clear existing content in the table
                     for (var i = 0; i < previewTable.rows.length; i++) {
-                        var row = previewTable.rows[i];
+                        var row = previewTable.rows[i+1];
                         if (row) {
                             // Clear the content of the cells in the row
                             row.cells[2].innerHTML = '';
@@ -592,6 +523,118 @@
                         }
                     }
                 }
+
+
+
+
+
+
+
+                /*
+
+                ----------------------- DOWNLOAD IMAGE -----------------------
+                     Description:
+                        Downloading the image with the generated description and evaluation as metadata. 
+                        We send the image with the data to the backend with a AJAX-request. 
+                        We get the description and evaluation from the table-row.
+                        We get the image from the file_input. 
+                        We recieve the processed image from the backend and trigger the browser to download the file.
+
+                        At this point the image has not been saved anywhere.
+                */
+
+                function downloadImage(rowIndex) {
+                    console.log("reached downloadImage at row: " + rowIndex);
+
+                    if (file_Input.files.length === 0) {
+                        alert('Please select an image file.');
+                        return;
+                    }
+
+                    // Directly access the correct row from the table.
+                    var row = previewTable.rows[rowIndex]; 
+
+                    var imageFile = file_Input.files[rowIndex - 1]; 
+                    var description = row.cells[1].innerText;
+                    var evaluationContent = row.cells[2].innerText;
+                    var evaluation = stripHtml(evaluationContent);
+
+                    const formData = new FormData();
+                    formData.append('imageFile', imageFile);
+                    formData.append('description', description);
+                    formData.append('evaluation', evaluation);
+
+                    fetch('/DownloadImageWithMetadata', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok: ' + response.statusText);
+                            }
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = imageFile.name;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                        })
+                        .catch(error => console.error('Error downloading the image:', error));
+                }
+
+
+
+
+
+                /*
+                ----------------------- Display Download Buttons-----------------------
+                    Description:
+                        Adds a download button to each row in the 'previewTable'. 
+                        Ensures every image row has a button linked to the downloadImage function.
+
+                */
+                function displayDownloadButtons() {
+
+                    var rows = previewTable.rows;
+
+                    // Start from 1 to skip the header row
+                    for (var i = 1; i < rows.length; i++) {
+                        var row = rows[i];
+                        var downloadCell = row.cells[3];
+
+                        // Clear existing content (if any) and append new button
+                        downloadCell.innerHTML = '';  // Clear any existing content
+                        var button = createDownloadButtonHTML(i);  // Create button
+                        downloadCell.appendChild(button);  // Append the button directly
+                    }
+                }
+
+
+
+                /*
+                ----------------------- Create Download Button HTML-----------------------
+                    Description:
+                        Returns HTML for a download button that triggers downloadImage with the row's index.
+                        Used by displayDownloadButtons to add/create download buttons.
+                */
+                function createDownloadButtonHTML(index) {
+                    const button = document.createElement('button');
+                    button.textContent = 'Download';
+                    button.className = 'download-btn'; // Optionally add a class for styling
+                    button.onclick = function () { downloadImage(index); };
+                    return button;  // Return the button element directly
+                }
+
+
+
+
+
+
+
 
 
 
