@@ -36,7 +36,16 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-        //MULTIPLE IMAGES UPDATE:
+        /// <summary>
+        /// Processes multiple image uploads provided as Base64-encoded strings within the request body,
+        /// converts them to byte arrays, and sends each image to a Docker-hosted service for description prediction.
+        /// This method logs the descriptions of all processed images and returns them in a structured response.
+        /// </summary>
+        /// <param name="request">The request containing an array of Base64-encoded strings representing images.</param>
+        /// <returns>A task representing the asynchronous operation, which returns an IActionResult that encapsulates the descriptions of all images processed.
+        /// If the process is successful, it returns an OK status with the descriptions; otherwise, 
+        /// it handles potential errors in image processing or prediction internally.
+        /// </returns>
         [HttpPost("GetMultipleImages")]
         public async Task<IActionResult> GetMultipleImages([FromBody] ImageUploadRequest request)
         {
@@ -56,6 +65,7 @@ namespace WebAppBachelorProject.Controllers
 
             return Ok(new { Descriptions = descriptions });
         }
+
 
 
 
@@ -98,14 +108,15 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-        /// <summary>
-        /// This function will send the image to the Docker with a REST API
-        /// </summary>
-        /// <param name="imageBytes"></param>
-        /// <returns> A generated description from the ML-model </returns>
-        /// 
         //Reference: https://stackoverflow.com/questions/50670553/posting-base64-converted-image-data
         //MultipartFormDataContent //Finn sources!
+        /// <summary>
+        /// Sends an image to a Docker-hosted service for processing and attempts to retrieve a generated caption from the response.
+        /// This method utilizes a new HttpClient instance to send the image bytes as multipart/form-data to the specified endpoint.
+        /// </summary>
+        /// <param name="imageBytes">The byte array of the image to be sent for processing.</param>
+        /// <returns>A task representing the asynchronous operation, which will return a string containing the caption of the image
+        /// if the operation is successful. If the server response is not successful, it returns an error message.</returns>
         public async Task<string> SendImageToDocker(byte[] imageBytes)
         {
             _logger.LogInformation("SendImageToServer has been called.");
@@ -141,7 +152,13 @@ namespace WebAppBachelorProject.Controllers
             public List<string> description { get; set; }
         }
 
-
+        /// <summary>
+        /// Receives an evaluation request and processes it to return predictions. This method logs the incoming request,
+        /// sends it to a Docker-based service for prediction, and then returns the predictions as a response.
+        /// </summary>
+        /// <param name="request">The evaluation request containing a description that is sent to a Docker service for processing.</param>
+        /// <returns>A task representing the asynchronous operation which will return an IActionResult. If predictions are successful,
+        /// it returns a list of predictions. If the predictions are null or the request is invalid, it returns an appropriate error status.</returns>
         [HttpPost("GetEval")]
         public async Task<IActionResult> GetEvaluation([FromBody] EvaluationRequest request)
         {
@@ -174,7 +191,16 @@ namespace WebAppBachelorProject.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Sends a list of descriptions to a Docker-hosted prediction service and retrieves the predictions.
+        /// This method creates a new HttpClient instance to handle the POST requests for each description,
+        /// processes the responses to extract predictions, and logs the outcomes of each request.
+        /// </summary>
+        /// <param name="descriptions">A list of descriptions to be sent for prediction. Each description is processed independently.</param>
+        /// <returns>A task representing the asynchronous operation, which will return a nested list of double values.
+        /// Each inner list contains predictions for a respective description. 
+        /// If any request fails, it logs an error and the corresponding prediction list might be incomplete or empty.
+        /// </returns>
         public async Task<List<List<double>>> SendDescToDocker(List<string> descriptions)
         {
             _logger.LogInformation("SendDescToDocker has been called.");
@@ -218,102 +244,25 @@ namespace WebAppBachelorProject.Controllers
             return allPredictions;
         }
 
-        /*
-
-        THIS IS WORKING!!!
-
-        [Authorize] //Used has to be logged in. 
-        [HttpPost("SaveMeta")]
-        public async Task<IActionResult> SaveMetadataToImages(
-            
-            [FromForm(Name = "imageFiles")] List<IFormFile> imageFiles,
-            [FromForm(Name = "descriptions")] List<string> descriptions,
-            [FromForm(Name = "evaluations")] List<string> evaluations
-            )
-        {
-            _logger.LogInformation("ImageController: SaveMetadataToImages has been called.");
-
-
-
-            _logger.LogInformation($"Received {imageFiles.Count} images.");
-            if (imageFiles.Count > 0)
-            {
-                _logger.LogInformation($"First image filename: {imageFiles[0].FileName}");
-            }
-
-
-            if (imageFiles == null || imageFiles.Count == 0)
-            {
-                _logger.LogError("No images provided.");
-                return BadRequest("No images provided.");
-            }
-
-            if (descriptions == null || descriptions.Count != imageFiles.Count)
-            {
-                _logger.LogError("Descriptions count does not match images count.");
-                return BadRequest("Descriptions count does not match images count.");
-            }
-
-            if (evaluations == null || evaluations.Count != imageFiles.Count)
-            {
-                _logger.LogError("Evaluations count does not match images count.");
-                return BadRequest("Evaluations count does not match images count.");
-            }
-
-            for (int i = 0; i < imageFiles.Count; i++)
-            {
-                var imageFile = imageFiles[i];
-                var description = descriptions[i];
-                var evaluation = evaluations[i];
-
-                _logger.LogInformation($"Found description: {description}");
-                _logger.LogInformation($"Found evaluation: {evaluation}");
-
-                string fileName = Path.GetFileName(imageFile.FileName);
-                string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                string fullPath = Path.Combine(folderPath, fileName);
-
-                try
-                {
-                    using (var imageStream = imageFile.OpenReadStream())
-                    {
-                        IImageFormat format = ImageSharpImage.DetectFormat(imageStream);
-                        _logger.LogInformation($"Detected format: {format.Name}");
-                        imageStream.Position = 0;
-
-                        using (var image = ImageSharpImage.Load(imageStream))
-                        {
-                            var metadata = image.Metadata.ExifProfile ?? new ExifProfile();
-                            metadata.SetValue(ExifTag.ImageDescription, description);
-
-                            await using (var outputFileStream = new FileStream(fullPath, FileMode.Create))
-                            {
-                                image.Save(outputFileStream, format);
-                            }
-                        }
-                    }
-                    _logger.LogInformation($"Image has been saved successfully. Sending to ImageToDB(desc, path, eval)");
-                    //await ImageToDB(description, fullPath, evaluation); // Ensure ImageToDB can handle evaluation parameter
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"An error occurred while processing image {fileName}: {ex.Message}");
-                    return StatusCode(500, $"An error occurred while processing the image: {ex.Message}");
-                }
-            }
-
-            return Ok(new { message = "All images have been successfully saved and processed." });
-        }
-
-
-        */
+       
 
 
         //PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions
         //USING IMAGESHARP - DOCUMENTATION https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Exif.html
+
+        /// <summary>
+        /// Adds metadata to an image based on the provided description and evaluation. 
+        /// This method opens the image file, detects its format, and modifies its EXIF profile.
+        /// </summary>
+        /// <param name="imageFile">The image file from which an image stream is created and processed.</param>
+        /// <param name="description">A text description that is added to the image's EXIF profile under the ImageDescription tag.</param>
+        /// <param name="evaluation">An evaluation or comment that is added to the image's EXIF profile under the UserComment tag.</param>
+        /// <returns>An ImageSharpImage with modified EXIF metadata, which can then be saved, downloaded, or further processed.</returns>
         private ImageSharpImage AddMetadataToImage(IFormFile imageFile, string description, string evaluation)
         {
             _logger.LogInformation("ImageController: AddMetadataToImage has been called.");
+
+            _logger.LogInformation($"Attempting to add the following metadata: Description:{description}, Evaluation: {evaluation}");
 
             var imageStream = imageFile.OpenReadStream();
             var format = ImageSharpImage.DetectFormat(imageStream);
@@ -327,16 +276,21 @@ namespace WebAppBachelorProject.Controllers
             metadata.SetValue(ExifTag.UserComment, evaluation);
             image.Metadata.ExifProfile = metadata;
             
-
-            // Add more metadata as needed
-
             _logger.LogInformation("Metadata is added, returning image.");
 
-            return image;  // Return the modified image for further use
+            return image; 
         }
 
 
 
+        /// <summary>
+        /// Asynchronously saves a list of images to the server folder.
+        /// This endpoint requires authorization and handles POST requests to "SaveImage".
+        /// </summary>
+        /// <param name="imageFiles">The list of image files to be saved. These files are passed as form data named "imageFiles".</param>
+        /// <param name="descriptions">Descriptions for each image file. Passed as form data named "descriptions"</param>
+        /// <param name="evaluations">Evaluations for each description. Passed as form data named "evaluations"</param>
+        /// <returns>indication of success or failure of the image saving process.</returns>
         [Authorize]
         [HttpPost("SaveImage")]
         public async Task<IActionResult> SaveImageToFolder(
@@ -388,7 +342,12 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-        //Used only for debugging purposes!
+        /// <summary>
+        /// Loads an image from the specified path and checks its EXIF metadata for the image description.
+        /// This method is primarily used for debugging purposes to verify that metadata has been correctly embedded in an image.
+        /// It logs the description if available, or logs an error if the description or EXIF metadata is missing.
+        /// </summary>
+        /// <param name="imagePath">The file path of the image whose metadata is to be checked.</param>
         public void CheckImageMetadata(string imagePath)
         {
             using (var image = ImageSharpImage.Load(imagePath))
@@ -510,8 +469,14 @@ namespace WebAppBachelorProject.Controllers
         /// <returns>Returns a FileContentResult containing the modified image with metadata as a downloadable file. 
         /// If an error occurs, it returns an appropriate HTTP status code with error details.
         /// </returns>
-        [HttpPost("DownloadImageWithMetadata")]
-        public async Task<IActionResult> DownloadImageWithMetadata([FromForm] IFormFile imageFile, [FromForm] string description, [FromForm] string evaluation)
+        
+        [HttpPost("downloadImageWithMetadata")]
+        public async Task<IActionResult> DownloadImageWithMetadata(
+
+            [FromForm(Name = "imageFile")] IFormFile imageFile,
+            [FromForm(Name = "description")] string description,
+            [FromForm(Name = "evaluation")] string evaluation
+            )
         {
             _logger.LogInformation("ImageController: DownloadImageWithMetadata is reached.");
 

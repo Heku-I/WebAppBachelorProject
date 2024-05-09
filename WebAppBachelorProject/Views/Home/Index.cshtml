@@ -564,7 +564,7 @@
                     formData.append('description', description);
                     formData.append('evaluation', evaluation);
 
-                    fetch('/DownloadImageWithMetadata', {
+                    fetch('Image/downloadImageWithMetadata', {
                         method: 'POST',
                         body: formData
                     })
@@ -597,6 +597,7 @@
                         Ensures every image row has a button linked to the downloadImage function.
 
                 */
+
                 function displayDownloadButtons() {
 
                     var rows = previewTable.rows;
@@ -621,6 +622,7 @@
                         Returns HTML for a download button that triggers downloadImage with the row's index.
                         Used by displayDownloadButtons to add/create download buttons.
                 */
+
                 function createDownloadButtonHTML(index) {
                     const button = document.createElement('button');
                     button.textContent = 'Download';
