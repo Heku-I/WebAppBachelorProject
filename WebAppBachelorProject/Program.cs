@@ -36,6 +36,7 @@ builder.Services.Configure<FormOptions>(options =>
     options.MemoryBufferThreshold = int.MaxValue;
 });
 
+var apiKey = builder.Configuration["OpenAI:ApiKey"];
 
 var app = builder.Build();
 

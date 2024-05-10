@@ -28,13 +28,17 @@ namespace WebAppBachelorProject.Controllers
         private readonly ILogger<ImageController> _logger;
         private readonly IImageRepository _imageRepository;
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
 
-        public ImageController(ILogger<ImageController> logger, IImageRepository imageRepository, ApplicationDbContext context)
+
+        public ImageController(ILogger<ImageController> logger, IImageRepository imageRepository, ApplicationDbContext context, IConfiguration configuration)
         {
             _logger = logger;
             _imageRepository = imageRepository;
             _context = context;
+            _configuration = configuration;
+
         }
 
 
@@ -118,7 +122,8 @@ namespace WebAppBachelorProject.Controllers
         [HttpPost("DescFromChatGPT")]
         public async Task<IActionResult> UploadToChatGPT([FromBody]ImageUploadRequest request)
         {
-            OpenAIAPI api = new OpenAIAPI("sk-proj-t0xBaRR9dj1YnFa87d3hT3BlbkFJ5DOr6j96gQJWTfEqToUA"); // shorthand
+            var apiKey = _configuration["OpenAI:ApiKey"];
+            OpenAIAPI api = new OpenAIAPI(apiKey); 
           
             List<string> descriptions = new List<string>();
 
