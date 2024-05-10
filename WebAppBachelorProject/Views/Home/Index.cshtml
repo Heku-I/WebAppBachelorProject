@@ -45,6 +45,7 @@
             </div>
             ------>
 		
+
 	
 	
 	<!---------https://learn.microsoft.com/en-us/answers/questions/1016900/how-to-upload-multiple-pics-at-a-time-in-asp-net-c ---->
@@ -74,16 +75,16 @@
             <label for="descModel">Select a AI Description Model</label>
 
             <select name="descModel" id="descModel">
-                <option value="ImageAble"> ImageAble </option>
-                <option value="ChatGPT" disabled> ChatGPT 4 (N/A) </option> 
-          
+                <option value="ImageAble" selected> ImageAble </option>
+                <option value="ChatGPT"> gpt-4-turbo (N/A) </option>
+
             </select>
 
             <!--Evaluation-->
             <label for="evalModel">Select a AI Evaluation Model</label>
 
             <select name="evalModel" id="evalModel">
-                <option value="NCAM"> NCAM </option>
+                <option value="NCAM" selected> NCAM </option>
                 <option value="N/A" disabled> N/A</option> 
             </select>
 
@@ -93,13 +94,8 @@
         <div id="GenerateButtons"></div>
 
             <table id="previewTable" class="table"></table>
-
-
-
             <div id="UploadImage"></div> <!--This might need to get removed. Just for debugging atm.-->
             <div id="informationOutput"></div>
-
-
             <textarea id="Description" hidden></textarea>
             <div id="evaluationOutput" hidden> </div>
 
@@ -180,9 +176,10 @@
                 var dropArea = document.getElementById("drop-area");
                 var file_Input = document.getElementById("file_input"); //NEW
                 var previewTable = document.getElementById("previewTable");
-
+                var descriptionSelect = document.getElementById("descModel");
                 var imageData = null;
 
+                var buttonGPT = document.getElementById("testGPT");
 
 
                 //NEW
@@ -203,13 +200,25 @@
                         this.generateButtonContainer.classList.add('d-flex', 'justify-content-center', 'mt-3');
                     },
 
+                    //https://stackoverflow.com/questions/1085801/get-selected-value-in-dropdown-list-using-javascript
+
                     createGenerateButton: function () {
                         var sendButton = document.createElement('button');
                         sendButton.innerText = 'Generate Description';
                         sendButton.classList.add('btn', 'btn-lg', 'btn-success');
                         sendButton.addEventListener('click', function () {
-                            // sendImageData(); //OLD
-                            sendMultipleImageData();
+
+                            if (descriptionSelect.value === "ImageAble") {
+                                sendMultipleImageData('/Image/GetMultipleImages');
+                            }
+
+                            if (descriptionSelect.value === "ChatGPT") {
+
+                                sendMultipleImageData('/Image/DescFromChatGPT');
+
+                            }
+
+                            
                         });
 
                         this.generateButtonContainer.appendChild(sendButton);
@@ -233,7 +242,20 @@
 
 
 
-                //https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/insertRow //Inserting table  rows
+
+
+                /*
+                ----------------------- PREVIEW IMAGE -----------------------
+                Description:
+                    Generates a dynamic preview of image files selected via `file_Input` in a specified table
+                    (`previewTable`). First, it clears any existing content in the table and sets up headers
+                    for 'Image', 'Description', 'Evaluation', and 'Button'. Each image file is read and displayed
+                    in a new table row with placeholders for further descriptions and controls.
+
+                    Sources:
+                    https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/insertRow - For inserting table rows
+
+                 */
 
                 function previewImage() {
                     var files = file_Input.files; //NEW
@@ -280,9 +302,9 @@
 
                                     let newRow = previewTable.insertRow(-1);
                                     newRow.insertCell(0).innerHTML = img.outerHTML;
-                                    newRow.insertCell(1).innerHTML = "..."; //Placeholder for buttons (Not sure what to do here yet.)
-                                    newRow.insertCell(2).innerHTML = "..."; //Placeholder for buttons (Not sure what to do here yet.)
-                                    newRow.insertCell(3).innerHTML = "..."; //Placeholder for buttons (Not sure what to do here yet.)
+                                    newRow.insertCell(1).innerHTML = "..."; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
+                                    newRow.insertCell(2).innerHTML = "..."; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
+                                    newRow.insertCell(3).innerHTML = "..."; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
  
 
                                     if (index === files.length - 1) {
@@ -301,66 +323,83 @@
                 }
 
 
+                /*
+                ----------------------- SEND MULTIPLE IMAGE DATA -----------------------
+                     Description:
+                        Sends an array of image files from a file input (`file_Input`) to a specified API endpoint.
+                        Images are read as base64-encoded strings, collected into an array, and sent as JSON. The
+                        function optionally includes authentication headers if required. After the API call, it
+                        processes the response by updating the UI with descriptions, evaluations, and download
+                        buttons, and handling errors appropriately.
+                */
 
-                function sendMultipleImageData() {
+                function sendMultipleImageData(apiUrl, needsAuth = false, apiKey = null) {
                     var imageFiles = file_Input.files;
 
                     if (imageFiles && imageFiles.length > 0) {
                         var imageDataArray = [];
 
-                        //Looping through each selected file
                         for (var i = 0; i < imageFiles.length; i++) {
                             var reader = new FileReader();
                             var file = imageFiles[i];
 
                             reader.onload = function (e) {
-                                //Convert the data URL to a Base64 string
                                 var base64String = e.target.result.split(',')[1];
                                 imageDataArray.push(base64String);
 
-                                //Check if all files have been processed
                                 if (imageDataArray.length === imageFiles.length) {
-                                    //Create JSON data with image array
                                     var jsonData = { imageBase64Array: imageDataArray };
 
-                                    //Send the JSON data to the backend
-                                    fetch('/Image/GetMultipleImages', {
+                                    var headers = {
+                                        'Content-Type': 'application/json',
+                                    };
+
+                                    if (needsAuth && apiKey) {
+                                        headers['Authorization'] = `Bearer ${apiKey}`;
+                                    }
+
+                                    fetch(apiUrl, {
                                         method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                        },
+                                        headers: headers,
                                         body: JSON.stringify(jsonData),
                                     })
                                         .then(response => response.json())
                                         .then(data => {
                                             console.log('Success:', data);
-                                            // Display the received description on your page
                                             displayDescription(data.descriptions);
-                                            generateEvaluation(); //Running the evaluation
-                                            displayDownloadButtons()
-
-                                            ButtonManager.createUploadButton(); //Need to change this!!
+                                            generateEvaluation();
+                                            displayDownloadButtons();
+                                            ButtonManager.createUploadButton();
                                         })
                                         .catch((error) => {
                                             console.error('Error:', error);
-                                            // Display an error message on the page
-                                            document.getElementById('informationOutput').innerHTML = "Error: Failed to send image data.";
+                                            document.getElementById('informationOutput').innerHTML = "Error: Failed to send image data. Please try another model.";
                                         });
                                 }
                             };
 
-                            // Read the file as a data URL
                             reader.readAsDataURL(file);
                         }
                     } else {
                         console.error('No image data to send');
-                        // Display an information message on the page
                         document.getElementById('informationOutput').innerHTML = "Please upload an image.";
                     }
                 }
 
 
-                //https://www.tutorialspoint.com/How-to-add-rows-to-a-table-using-JavaScript-DOM //To use InsertCell
+
+
+                /*
+                ----------------------- DISPLAY DESCRIPTION -----------------------
+                Description:
+                    Updates an HTML table (`previewTable`) by populating it with descriptions provided in the
+                    `description` array. The function iterates over the array, placing each description into
+                    successive table rows, starting from the second row to skip the header. 
+
+                    Source:
+                    https://www.tutorialspoint.com/How-to-add-rows-to-a-table-using-JavaScript-DOM
+                */
+
                 function displayDescription(description) {
                     console.log("Description length:", description.length);
                     //console.log("Number of rows in the table:", previewTable.rows.length);
@@ -375,9 +414,16 @@
                     }
                 }
 
-             
 
-                // Saving multiple images with descriptions and evaluations to the backend in a single request
+
+                /*
+                 ----------------------- SAVE ALL IMAGES TO GALLERY/DATABASE/FOLDER -----------------------
+                Description:
+                    Gets image files, descriptions, and evaluations from a table (`previewTable`) and an input
+                    (`file_Input`), constructs a FormData object, and sends it to a server endpoint via POST. Each
+                    file and its corresponding metadata are logged before sending. 
+                */
+
                 function saveAllImagesToGallery() {
                     var rows = previewTable.rows;
 
@@ -426,6 +472,14 @@
                 }
 
 
+                /*
+                ----------------------- GENERATE EVALUATION -----------------------
+                Description:
+                    Collects descriptions from (`previewTable`) and sends them as a JSON payload to a server endpoint for processing. 
+                    
+                    On receiving the response, it checks the validity of the data and calls `displayEvaluation` to update the UI
+                    with received data. This function also handles errors by logging them to the console.
+                */
 
                 function generateEvaluation() {
                     let tableLength = previewTable.rows.length;
@@ -471,9 +525,34 @@
                 }
 
 
+
+                /*
+                ----------------------- STRIP HTML -----------------------
+                Description:
+                    Removes all HTML tags from a given string. This function takes a string containing HTML
+                    and returns a new string with all HTML tags stripped using a regular expression, leaving
+                    only plain text.
+
+                    Sources:
+                    https://stackoverflow.com/questions/822452/strip-html-tags-from-text-using-plain-javascript
+
+                */
+
                 function stripHtml(html) {
                     return html.replace(/<[^>]*>/g, '');
                 }
+
+
+
+
+
+                /*
+                ----------------------- DISPLAY EVALUATION -----------------------
+                     Description:
+                        Clears and updates a table with formatted evaluation metrics. Metrics are converted to numeric
+                        values, formatted to four decimal places, and displayed in batches of 10 per cell. Errors are
+                        logged if specified table rows do not exist.
+                */
 
                 function displayEvaluation(evaluation) {
 
@@ -517,10 +596,6 @@
                         }
                     }
                 }
-
-
-
-
 
 
 
@@ -585,7 +660,7 @@
 
 
                 /*
-                ----------------------- Display Download Buttons-----------------------
+                ----------------------- DISPLAY DOWNLOAD BUTTONS-----------------------
                     Description:
                         Adds a download button to each row in the 'previewTable'. 
                         Ensures every image row has a button linked to the downloadImage function.
@@ -601,17 +676,17 @@
                         var row = rows[i];
                         var downloadCell = row.cells[3];
 
-                        // Clear existing content (if any) and append new button
-                        downloadCell.innerHTML = '';  // Clear any existing content
-                        var button = createDownloadButtonHTML(i);  // Create button
-                        downloadCell.appendChild(button);  // Append the button directly
+
+                        downloadCell.innerHTML = '';
+                        var button = createDownloadButtonHTML(i);  
+                        downloadCell.appendChild(button);  
                     }
                 }
 
 
 
                 /*
-                ----------------------- Create Download Button HTML-----------------------
+                ----------------------- CREATE DOWNLOAD BUTTON HTML -----------------------
                     Description:
                         Returns HTML for a download button that triggers downloadImage with the row's index.
                         Used by displayDownloadButtons to add/create download buttons.
@@ -620,9 +695,9 @@
                 function createDownloadButtonHTML(index) {
                     const button = document.createElement('button');
                     button.textContent = 'Download';
-                    button.className = 'download-btn'; // Optionally add a class for styling
+                    button.className = 'download-btn'; 
                     button.onclick = function () { downloadImage(index); };
-                    return button;  // Return the button element directly
+                    return button; 
                 }
 
 

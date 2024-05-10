@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OpenAI_API;
+using OpenAI_API.Models;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using System.IO;
@@ -11,6 +14,7 @@ using System.Text;
 using WebAppBachelorProject.DAL;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
+using static OpenAI_API.Chat.ChatMessage;
 using ImageSharpImage = SixLabors.ImageSharp.Image;
 
 namespace WebAppBachelorProject.Controllers
@@ -61,7 +65,7 @@ namespace WebAppBachelorProject.Controllers
                 descriptions.Add(description);
             }
 
-            _logger.LogInformation($"Description Array: {descriptions.ToString()} "); 
+            _logger.LogInformation($"Description Array: {descriptions.ToString()} ");
 
             return Ok(new { Descriptions = descriptions });
         }
@@ -105,6 +109,40 @@ namespace WebAppBachelorProject.Controllers
 
             return descriptions;
         }
+
+
+
+        //https://github.com/OkGoDoIt/OpenAI-API-dotnet?tab=readme-ov-file
+        //https://platform.openai.com/docs/guides/vision
+
+        [HttpPost("DescFromChatGPT")]
+        public async Task<IActionResult> UploadToChatGPT([FromBody]ImageUploadRequest request)
+        {
+            OpenAIAPI api = new OpenAIAPI("sk-proj-t0xBaRR9dj1YnFa87d3hT3BlbkFJ5DOr6j96gQJWTfEqToUA"); // shorthand
+          
+            List<string> descriptions = new List<string>();
+
+            foreach(string base64String in request.ImageBase64Array)
+            {
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+
+                var result = await api.Chat.CreateChatCompletionAsync("Give me a description of the following image? Make it short.",
+                    ImageInput.FromImageBytes(imageBytes));
+
+                _logger.LogInformation($"Repsonse from ChatGPT: {result}");
+
+                descriptions.Add(result.ToString()); 
+            }
+
+            _logger.LogInformation($"Description Array: {descriptions.ToString()} ");
+
+            return Ok(new { Descriptions = descriptions });
+        }
+
+
+
+
+
 
 
 
@@ -244,7 +282,7 @@ namespace WebAppBachelorProject.Controllers
             return allPredictions;
         }
 
-       
+
 
 
         //PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions
@@ -275,10 +313,10 @@ namespace WebAppBachelorProject.Controllers
             metadata.SetValue(ExifTag.ImageDescription, description);
             metadata.SetValue(ExifTag.UserComment, evaluation);
             image.Metadata.ExifProfile = metadata;
-            
+
             _logger.LogInformation("Metadata is added, returning image.");
 
-            return image; 
+            return image;
         }
 
 
@@ -322,7 +360,7 @@ namespace WebAppBachelorProject.Controllers
                         }
                     }
 
-                    CheckImageMetadata(fullPath); 
+                    CheckImageMetadata(fullPath);
 
                     _logger.LogInformation($"Image has been saved successfully. Sending to ImageToDB(desc, path, eval)");
                     await ImageToDB(description, fullPath, evaluation);
@@ -336,6 +374,22 @@ namespace WebAppBachelorProject.Controllers
 
             return Ok(new { message = "All images have been successfully saved and processed." });
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
