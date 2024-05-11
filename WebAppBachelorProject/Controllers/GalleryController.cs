@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using WebAppBachelorProject.DAL;
 using WebAppBachelorProject.Data;
+using WebAppBachelorProject.Models;
+using Image = WebAppBachelorProject.Models.Image;
 
 namespace WebAppBachelorProject.Controllers
 {
@@ -24,8 +27,8 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
-   
 
+        /*
         [Authorize]
         public async Task<IActionResult> Index()
         {
@@ -42,39 +45,74 @@ namespace WebAppBachelorProject.Controllers
 
             return View(images);
         }
+        */
 
 
-        /*
+
+
+
         //https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-8.0
 
         [Authorize]
-        public async Task<IActionResult> Index(string sortOrder)
+        public async Task<IActionResult> Index(
+             string sortOrder,
+             string currentFilter,
+             string searchString,
+             int? pageNumber
+            )
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation($"The view has been requested by user ID {userId}");
+            _logger.LogInformation($"The gallery has been requested by user ID {userId}");
 
-            ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
+
+            if(userId == null)
+            {
+                _logger.LogError("No User"); 
+                Forbid("No user");
+            }
+
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
+
+            ViewData["CurrentFilter"] = searchString;
+
+            // Await the task to get the collection
             var userImages = await _imageRepository.GetByUser(userId);
 
-            var imageFiles = from i in userImages
-                           select i;
-
+            var images = from s in _context.Images
+                           select s;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                images = images.Where(s => s.Description.Contains(searchString));
+            }
             switch (sortOrder)
             {
                 case "Date":
-                    imageFiles = imageFiles.OrderBy(i => i.DateCreated);
+                    images = images.OrderBy(i => i.DateCreated);
                     break;
                 case "date_desc":
-                    imageFiles = imageFiles.OrderByDescending(i => i.DateCreated);
+                    images = images.OrderByDescending(i => i.DateCreated);
                     break;
                 default:
-                    imageFiles = imageFiles.OrderByDescending(i => i.DateCreated);
+                    images = images.OrderByDescending(i => i.DateCreated);
                     break;
             }
-            return View(await imageFiles.AsNoTracking().ToListAsync());
+
+            int pageSize = 3;
+            return View(await PaginatedList<Image>.CreateAsync(images.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
-        */
+
+
+
 
 
 

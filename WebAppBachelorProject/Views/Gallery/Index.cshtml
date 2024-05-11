@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebAppBachelorProject.Models.Image>
+﻿@model PaginatedList<WebAppBachelorProject.Models.Image>
 @using Microsoft.AspNetCore.Identity;
 @using WebAppBachelorProject.Areas.Identity.Data;
 @inject UserManager<WebAppBachelorProjectUser> UserManager; 
@@ -22,21 +22,25 @@
     </h1>
 </div>
 
+
+
+
 <div class="container mt-5">
     <section id="search-section" class="text-center mt-5" style="margin-top:20px;">
-        @using (Html.BeginForm("Index", "Gallery", FormMethod.Get, new { @class = "form-inline" }))
-        {
-            <div class="row justify-content-center">
-                <div class="col-sm-4">
-                    <div class="input-group">
-                        @Html.TextBox("searchString", null, new { @class = "form-control", placeholder = "Search..." })
-                        <div class="input-group-append">
-                            <button type="submit" class="btn btn-dark btn-lg">Search</button>
-                        </div>
-                    </div>
-                </div>
+
+        <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
+        <!--------- SEARCH BAR ---------->
+        <form asp-action="Index" method="get">
+            <div class="form-actions no-color">
+                <p>
+                    Search by description: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+                    <input type="submit" value="Search" class="btn btn-default" /> |
+                    <a asp-action="Index">Back to Full List</a>
+                </p>
             </div>
-        }
+        </form>
+
+
     </section>
 
 
@@ -66,6 +70,29 @@
             </div>
         }
 
+        @{
+            var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+            var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+        }
+
+
+        <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
+        <!---//Previous and next buttons-->
+
+        <a asp-action="Index"
+           asp-route-sortOrder="@ViewData["CurrentSort"]"
+           asp-route-pageNumber="@(Model.PageIndex - 1)"
+           asp-route-currentFilter="@ViewData["CurrentFilter"]"
+           class="btn btn-default @prevDisabled">
+            Previous
+        </a>
+        <a asp-action="Index"
+           asp-route-sortOrder="@ViewData["CurrentSort"]"
+           asp-route-pageNumber="@(Model.PageIndex + 1)"
+           asp-route-currentFilter="@ViewData["CurrentFilter"]"
+           class="btn btn-default @nextDisabled">
+            Next
+        </a>
 
     </section>
 
