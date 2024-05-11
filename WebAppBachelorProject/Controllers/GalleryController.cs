@@ -24,6 +24,7 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
+   
 
         [Authorize]
         public async Task<IActionResult> Index()
@@ -41,6 +42,44 @@ namespace WebAppBachelorProject.Controllers
 
             return View(images);
         }
+
+
+        /*
+        //https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-8.0
+
+        [Authorize]
+        public async Task<IActionResult> Index(string sortOrder)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation($"The view has been requested by user ID {userId}");
+
+            ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
+            var userImages = await _imageRepository.GetByUser(userId);
+
+            var imageFiles = from i in userImages
+                           select i;
+
+            switch (sortOrder)
+            {
+                case "Date":
+                    imageFiles = imageFiles.OrderBy(i => i.DateCreated);
+                    break;
+                case "date_desc":
+                    imageFiles = imageFiles.OrderByDescending(i => i.DateCreated);
+                    break;
+                default:
+                    imageFiles = imageFiles.OrderByDescending(i => i.DateCreated);
+                    break;
+            }
+            return View(await imageFiles.AsNoTracking().ToListAsync());
+        }
+
+        */
+
+
+
+
+
         /* Commented our for now.. may be buggy and needs error handlings
         [HttpPost]
         public IActionResult searchImages(DateOnly? fromDate, DateOnly? toDate, string description)
