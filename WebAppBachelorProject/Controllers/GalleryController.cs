@@ -27,30 +27,6 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
-
-        /*
-        [Authorize]
-        public async Task<IActionResult> Index()
-        {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation($"The view has been requested by user ID {userId}");
-
-
-            var images = await _imageRepository.GetByUser(userId);
-
-            _logger.LogInformation("GalleryController: Index has been called.");
-
-            //ViewData["User"] = User;
-
-
-            return View(images);
-        }
-        */
-
-
-
-
-
         //https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-8.0
 
         [Authorize]
@@ -84,7 +60,6 @@ namespace WebAppBachelorProject.Controllers
 
             ViewData["CurrentFilter"] = searchString;
 
-            // Await the task to get the collection
             var userImages = await _imageRepository.GetByUser(userId);
 
             var images = from s in _context.Images
@@ -93,6 +68,8 @@ namespace WebAppBachelorProject.Controllers
             {
                 images = images.Where(s => s.Description.Contains(searchString));
             }
+
+            //Sorting not working yet!
             switch (sortOrder)
             {
                 case "Date":
@@ -111,47 +88,6 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
-
-
-
-
-
-
-
-        /* Commented our for now.. may be buggy and needs error handlings
-        [HttpPost]
-        public IActionResult searchImages(DateOnly? fromDate, DateOnly? toDate, string description)
-        {
-            try
-            {
-                Console.WriteLine("searchImages has been calles");
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var query = _context.Images.Where(i => i.UserId == userId);
-
-                if (!string.IsNullOrEmpty(description))
-                    query = query.Where(i => i.Description.Contains(description));
-                if (fromDate.HasValue)
-                    query = query.Where(i => i.DateCreated >= fromDate.Value);
-                if (toDate.HasValue)
-                    query = query.Where(i => i.DateCreated <= toDate.Value);
-                var images = query.ToList();
-
-                if (images.Count == 0)
-                {
-                    TempData["ErrorMessage"] = "No images found matching the search ";
-
-                }
-                return View(images);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error has occurred while processing");
-                TempData["ErrorMessage"] = "An error occurred while processing";
-                return View();
-            }
-
-        }*/
 
     }
 }
