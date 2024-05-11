@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenAI_API;
-using OpenAI_API.Models;
-using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
-using System.IO;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
@@ -379,25 +375,6 @@ namespace WebAppBachelorProject.Controllers
 
             return Ok(new { message = "All images have been successfully saved and processed." });
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

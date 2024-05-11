@@ -31,27 +31,10 @@
 
 
 
-        <!-----THE OLD BUTTON.
-        <div class="container mt-5 w-50">
-            <div id="drop-area" class="dark-container h2">
-                <p>
-                    Drag and drop
-                    <br>
-                    an image file here
-                    <br>
-                    or click to select one.
-                </p>
-                <input type="file" id="file-input" accept="image/*" style="display: none;" />
-            </div>
-            ------>
-		
 
 	
 	
 	<!---------https://learn.microsoft.com/en-us/answers/questions/1016900/how-to-upload-multiple-pics-at-a-time-in-asp-net-c ---->
-
-
-
     <!-----THE NEW BUTTON (THIS IS FOR MULTIPLE IMAGES------>
             <form enctype="multipart/form-data" method="post">
                 <dl>
@@ -68,7 +51,7 @@
             </form>
 
 
-            <!--NOT WORKING YET!-->
+
         <div id="selectModel" hidden>
 
             <!--Description-->
@@ -178,8 +161,6 @@
                 var previewTable = document.getElementById("previewTable");
                 var descriptionSelect = document.getElementById("descModel");
                 var imageData = null;
-
-                var buttonGPT = document.getElementById("testGPT");
 
 
                 //NEW
