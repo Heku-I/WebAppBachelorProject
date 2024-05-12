@@ -2,17 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using OpenAI_API;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
-using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Security.Policy;
 using System.Text;
 using WebAppBachelorProject.DAL.Repositories;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
 using WebAppBachelorProject.Services;
-using static OpenAI_API.Chat.ChatMessage;
 using ImageSharpImage = SixLabors.ImageSharp.Image;
 
 namespace WebAppBachelorProject.Controllers
@@ -104,83 +100,12 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
-
-        /* MAYBE REMOVE. 
-
-        public async Task<List<string>> SendImagesToDockerMultiple(List<byte[]> imageBytesList)
-        {
-            _logger.LogInformation("SendImagesToDocker has been called.");
-
-            List<string> descriptions = new List<string>();
-
-            foreach (var imageBytes in imageBytesList)
-            {
-                using (var client = new HttpClient())
-                {
-                    using (var content = new MultipartFormDataContent())
-                    {
-                        // Create ByteArrayContent from image bytes, and add to form data content
-                        var imageContent = new ByteArrayContent(imageBytes);
-                        imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-                        content.Add(imageContent, "image", "upload.jpg");
-
-                        var response = await client.PostAsync("http://localhost:5000/predict", content);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            var responseContent = await response.Content.ReadAsStringAsync();
-                            _logger.LogInformation($"Response: {responseContent}");
-                            descriptions.Add(JsonConvert.DeserializeObject<dynamic>(responseContent).caption);
-                        }
-                        else
-                        {
-                            _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
-                            descriptions.Add("Error: Could not get a description");
-                        }
-                    }
-                }
-            }
-
-            return descriptions;
-        }
-
-        */
-
-
-        //https://github.com/OkGoDoIt/OpenAI-API-dotnet?tab=readme-ov-file
-        //https://platform.openai.com/docs/guides/vision
-
         [HttpPost("DescFromChatGPT")]
-        public async Task<IActionResult> UploadToChatGPT([FromBody]ImageUploadRequest request)
+        public async Task<IActionResult> UploadToChatGPT([FromBody] ImageUploadRequest request)
         {
-            var apiKey = _configuration["OpenAI:ApiKey"];
-            OpenAIAPI api = new OpenAIAPI(apiKey); 
-          
-            List<string> descriptions = new List<string>();
-
-            foreach(string base64String in request.ImageBase64Array)
-            {
-                byte[] imageBytes = Convert.FromBase64String(base64String);
-
-                var result = await api.Chat.CreateChatCompletionAsync("Give me a description of the following image? Make it short.",
-                    ImageInput.FromImageBytes(imageBytes));
-
-                _logger.LogInformation($"Repsonse from ChatGPT: {result}");
-
-                descriptions.Add(result.ToString()); 
-            }
-
-            _logger.LogInformation($"Description Array: {descriptions.ToString()} ");
-
+            var descriptions = await _imageProcessingService.UploadToChatGPT(request);
             return Ok(new { Descriptions = descriptions });
         }
-
-
-
-
-
-
-
-
 
 
 

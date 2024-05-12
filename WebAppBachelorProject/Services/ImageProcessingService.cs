@@ -1,15 +1,23 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using OpenAI_API;
 using System.Net.Http.Headers;
+using static OpenAI_API.Chat.ChatMessage;
+using WebAppBachelorProject.Models;
+
 
 namespace WebAppBachelorProject.Services
 {
     public class ImageProcessingService : IImageProcessingService
     {
         private readonly ILogger<ImageProcessingService> _logger;
+        private readonly IConfiguration _configuration;
 
-        public ImageProcessingService(ILogger<ImageProcessingService> logger)
+        public ImageProcessingService(ILogger<ImageProcessingService> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+
         }
 
 
@@ -50,6 +58,116 @@ namespace WebAppBachelorProject.Services
                 }
             }
         }
+
+
+
+        //https://github.com/OkGoDoIt/OpenAI-API-dotnet?tab=readme-ov-file
+        //https://platform.openai.com/docs/guides/vision
+
+
+        public async Task<List<string>> UploadToChatGPT(ImageUploadRequest request)
+        {
+            var apiKey = _configuration["OpenAI:ApiKey"];
+            OpenAIAPI api = new OpenAIAPI(apiKey);
+            List<string> descriptions = new List<string>();
+
+            foreach (string base64String in request.ImageBase64Array)
+            {
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+                var result = await api.Chat.CreateChatCompletionAsync("Give me a description of the following image? Make it short.", ImageInput.FromImageBytes(imageBytes));
+
+                _logger.LogInformation($"Response from ChatGPT: {result}");
+                descriptions.Add(result.ToString());
+            }
+
+            _logger.LogInformation($"Description Array: {descriptions}");
+            return descriptions;
+        }
+
+
+        /*
+
+        //https://github.com/OkGoDoIt/OpenAI-API-dotnet?tab=readme-ov-file
+        //https://platform.openai.com/docs/guides/vision
+
+        [HttpPost("DescFromChatGPT")]
+        public async Task<IActionResult> UploadToChatGPT([FromBody] ImageUploadRequest request)
+        {
+            var apiKey = _configuration["OpenAI:ApiKey"];
+            OpenAIAPI api = new OpenAIAPI(apiKey);
+
+            List<string> descriptions = new List<string>();
+
+            foreach (string base64String in request.ImageBase64Array)
+            {
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+
+                var result = await api.Chat.CreateChatCompletionAsync("Give me a description of the following image? Make it short.",
+                    ImageInput.FromImageBytes(imageBytes));
+
+                _logger.LogInformation($"Repsonse from ChatGPT: {result}");
+
+                descriptions.Add(result.ToString());
+            }
+
+            _logger.LogInformation($"Description Array: {descriptions.ToString()} ");
+
+            return Ok(new { Descriptions = descriptions });
+        }
+
+        */
+
+
+
+
+
+
+
+
+        /* MAYBE REMOVE. 
+
+public async Task<List<string>> SendImagesToDockerMultiple(List<byte[]> imageBytesList)
+{
+    _logger.LogInformation("SendImagesToDocker has been called.");
+
+    List<string> descriptions = new List<string>();
+
+    foreach (var imageBytes in imageBytesList)
+    {
+        using (var client = new HttpClient())
+        {
+            using (var content = new MultipartFormDataContent())
+            {
+                // Create ByteArrayContent from image bytes, and add to form data content
+                var imageContent = new ByteArrayContent(imageBytes);
+                imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                content.Add(imageContent, "image", "upload.jpg");
+
+                var response = await client.PostAsync("http://localhost:5000/predict", content);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation($"Response: {responseContent}");
+                    descriptions.Add(JsonConvert.DeserializeObject<dynamic>(responseContent).caption);
+                }
+                else
+                {
+                    _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
+                    descriptions.Add("Error: Could not get a description");
+                }
+            }
+        }
+    }
+
+    return descriptions;
+}
+
+*/
+
+
+
+
+
 
     }
 }
