@@ -123,16 +123,16 @@ namespace ImageAble.Tests
         [Test]
         public async Task GetMultipleImages_InvalidBase64String_ReturnsBadRequestWithMessage()
         {
-            // Arrange
+            //Arrange
             var request = new ImageUploadRequest
             {
                 ImageBase64Array = new List<string> { "Not_A_Valid_Base64_String" }
             };
 
-            // Act
+            //Act
             var result = await _controller.GetMultipleImages(request) as BadRequestObjectResult;
 
-            // Assert
+            //Assert
             Assert.IsNotNull(result, "The result should not be null.");
             var actualMessage = result.Value;
             Assert.AreEqual("It is not a base64String", actualMessage); 
@@ -144,7 +144,7 @@ namespace ImageAble.Tests
         [Test]
         public async Task GetMultipleImages_WithNullDescription_ReturnsBadRequest()
         {
-            // Arrange
+            //Arrange
             var validBase64String = "stt6gx/LzXjhTJs33+MKxg=="; 
             var request = new ImageUploadRequest
             {
@@ -155,10 +155,10 @@ namespace ImageAble.Tests
             var returnSetup = methodSetup.ReturnsAsync((string)null);
 
 
-            // Act
+            //Act
             var result = await _controller.GetMultipleImages(request) as BadRequestObjectResult;
 
-            // Assert
+            //Assert
             Assert.IsNotNull(result, "Expected a non-null result for a BadRequest.");
             Assert.AreEqual("Description returned as null.", result.Value, "Expected a specific BadRequest message when the description is null.");
         }
@@ -174,8 +174,8 @@ namespace ImageAble.Tests
         [Test]
         public async Task GetMultipleImages_Successful_ReturnsOkWithDescriptions()
         {
-            // Arrange
-            var validBase64String = "stt6gx/LzXjhTJs33+MKxg==";  // Assuming this is a valid base64 string
+            //Arrange
+            var validBase64String = "stt6gx/LzXjhTJs33+MKxg=="; 
             var expectedDescriptions = new List<string> { "Description1", "Description2" };
             var request = new ImageUploadRequest
             {
@@ -186,16 +186,16 @@ namespace ImageAble.Tests
                 .ReturnsAsync("Description1")
                 .ReturnsAsync("Description2");
 
-            // Act
+            //Act
             var result = await _controller.GetMultipleImages(request) as OkObjectResult;
 
-            // Assert
+            //Assert
             Assert.IsNotNull(result);
             Assert.IsInstanceOf<OkObjectResult>(result);
 
             Assert.IsNotNull(result.Value, "The result value should not be null.");
 
-            // Parsing the JSON object from the result.Value
+            //Parsing the JSON object from the result.Value
             var jsonObject = Newtonsoft.Json.JsonConvert.SerializeObject(result.Value);
             var actualResult = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(jsonObject);
 
