@@ -44,7 +44,10 @@
                         <div id="drop-area">
 
                             <dd>
-                                <input type="file" id="file_input" name="uploadfile" accept="image/*" multiple>
+                                <div class="d-flex justify-content-center align-items-center mt-5">
+                                <input type="file" id="file_input" name="uploadfile" accept="image/*" multiple />
+                                <label for="file_input">Choose an image to upload</label
+                                </div>
                             </dd>
                         </div>
                     </dt>
@@ -209,7 +212,7 @@
                     createGenerateButton: function () {
                         var sendButton = document.createElement('button');
                         sendButton.innerText = 'Generate Description';
-                        sendButton.classList.add('btn', 'btn-lg', 'btn-success');
+                        sendButton.classList.add('btn', 'btn-md', 'btn-success');
                         sendButton.addEventListener('click', function () {
 
                             if (descriptionSelect.value === "ImageAble") {
@@ -373,7 +376,7 @@
                                             displayDescription(data.descriptions);
                                             generateEvaluation();
                                             displayDownloadButtons();
-                                            displayUpdateDescriptionButtons(); 
+                                            displayUpdateDescriptionButtons();
                                             ButtonManager.createUploadButton();
                                         })
                                         .catch((error) => {
@@ -701,6 +704,7 @@
                     const button = document.createElement('button');
                     button.textContent = 'Download';
                     button.className = 'download-btn'; 
+                    button.classList.add('btn','btn-dark')
                     button.onclick = function () { downloadImage(index); };
                     return button; 
                 }
@@ -742,8 +746,9 @@
 
                 function createUpdateButtonHTML(row) {
                     const button = document.createElement('button');
-                    button.textContent = 'Change Description';
+                    button.textContent = 'Change description';
                     button.className = 'update-btn';
+                    button.classList.add('btn','btn-dark','mt-2')
                     button.setAttribute('data-bs-toggle', 'modal');
                     button.setAttribute('data-bs-target', '#exampleModal');
                     button.onclick = function () {

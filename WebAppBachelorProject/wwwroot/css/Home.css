@@ -2,6 +2,59 @@
     overflow-y: scroll;
 }
 
+
+/*file input styling*/
+#file_input{
+   
+    width:0.1px;
+    height:0.1px;
+    opacity:0;
+    overflow:hidden;
+    position:absolute;
+    z-index:-1;
+}
+
+    #file_input + label {
+        border-radius: 1em;
+        height: 8em;
+        width: 28em;
+        font-size: 1.3em;
+        font-weight: 500;
+        color: #F4FAFF;
+        background-color: #08090A;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+        #file_input:focus + label,
+        #file_input + label:hover {
+            background-color: #D3D3D3;
+            color: #08090A;
+        }
+    
+
+#file_input + label{
+    cursor:pointer;
+}
+
+/*Model selection styling*/
+
+#descModel {
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+#evalModel {
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+
+
 /* Custom CSS to hide card background and show description on hover */
 .card {
     border-radius: 20px;
