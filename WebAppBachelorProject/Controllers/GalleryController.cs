@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using WebAppBachelorProject.DAL;
+using WebAppBachelorProject.DAL.Repositories;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
 using Image = WebAppBachelorProject.Models.Image;

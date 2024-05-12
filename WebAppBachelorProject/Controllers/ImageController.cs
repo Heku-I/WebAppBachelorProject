@@ -6,10 +6,12 @@ using OpenAI_API;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Policy;
 using System.Text;
-using WebAppBachelorProject.DAL;
+using WebAppBachelorProject.DAL.Repositories;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
+using WebAppBachelorProject.Services;
 using static OpenAI_API.Chat.ChatMessage;
 using ImageSharpImage = SixLabors.ImageSharp.Image;
 
@@ -25,15 +27,17 @@ namespace WebAppBachelorProject.Controllers
         private readonly IImageRepository _imageRepository;
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IImageProcessingService _imageProcessingService;
 
 
 
-        public ImageController(ILogger<ImageController> logger, IImageRepository imageRepository, ApplicationDbContext context, IConfiguration configuration)
+        public ImageController(ILogger<ImageController> logger, IImageRepository imageRepository, ApplicationDbContext context, IConfiguration configuration, IImageProcessingService imageProcessingService)
         {
             _logger = logger;
             _imageRepository = imageRepository;
             _context = context;
             _configuration = configuration;
+            _imageProcessingService = imageProcessingService;
 
         }
 
@@ -53,26 +57,55 @@ namespace WebAppBachelorProject.Controllers
         [HttpPost("GetMultipleImages")]
         public async Task<IActionResult> GetMultipleImages([FromBody] ImageUploadRequest request)
         {
+            Console.WriteLine("GetMultipleImages has been called");
+
+            if (request == null)
+            {
+                Console.WriteLine("Request is null");
+                return BadRequest("Request cannot be null.");
+            }
+
+            if (request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
+            {
+                Console.WriteLine("ImageBase64Array list is null");
+                return BadRequest("Image list cannot be empty.");
+
+            }
+
             List<string> descriptions = new List<string>();
 
             foreach (string base64String in request.ImageBase64Array)
             {
-                // Convert the Base64 string to a byte array
+                if (!IsBase64String(base64String))
+                {
+                    Console.WriteLine("The 'base64String' is not a base64String.");
+                    return BadRequest("It is not a base64String");
+
+                }
+
+                //Convert the Base64 string to a byte array
                 byte[] imageBytes = Convert.FromBase64String(base64String);
 
-                // Pass the byte array to the ML model for prediction
-                string description = await SendImageToDocker(imageBytes);
+                //Pass the byte array to the ML model for prediction
+                string description = await _imageProcessingService.SendImageToDocker(imageBytes);
+
+                if (description == null)
+                {
+
+                    Console.WriteLine("Description is null. Please check Service.");
+                    return BadRequest("Description returned as null.");
+
+                }
+
                 descriptions.Add(description);
             }
-
-            _logger.LogInformation($"Description Array: {descriptions.ToString()} ");
 
             return Ok(new { Descriptions = descriptions });
         }
 
 
 
-
+        /* MAYBE REMOVE. 
 
         public async Task<List<string>> SendImagesToDockerMultiple(List<byte[]> imageBytesList)
         {
@@ -110,6 +143,7 @@ namespace WebAppBachelorProject.Controllers
             return descriptions;
         }
 
+        */
 
 
         //https://github.com/OkGoDoIt/OpenAI-API-dotnet?tab=readme-ov-file
@@ -147,49 +181,8 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-        //Reference: https://stackoverflow.com/questions/50670553/posting-base64-converted-image-data
-        //MultipartFormDataContent //Finn sources!
-        /// <summary>
-        /// Sends an image to a Docker-hosted service for processing and attempts to retrieve a generated caption from the response.
-        /// This method utilizes a new HttpClient instance to send the image bytes as multipart/form-data to the specified endpoint.
-        /// </summary>
-        /// <param name="imageBytes">The byte array of the image to be sent for processing.</param>
-        /// <returns>A task representing the asynchronous operation, which will return a string containing the caption of the image
-        /// if the operation is successful. If the server response is not successful, it returns an error message.</returns>
-        public async Task<string> SendImageToDocker(byte[] imageBytes)
-        {
-            _logger.LogInformation("SendImageToServer has been called.");
-
-            using (var client = new HttpClient())
-            {
-                using (var content = new MultipartFormDataContent())
-                {
-                    // Create ByteArrayContent from image bytes, and add to form data content
-                    var imageContent = new ByteArrayContent(imageBytes);
-                    imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-                    content.Add(imageContent, "image", "upload.jpg");
-
-                    var response = await client.PostAsync("http://imageable.hrf7gefrewh3e0f2.northeurope.azurecontainer.io:5000/predict", content);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        _logger.LogInformation($"Response: {responseContent}");
-                        return JsonConvert.DeserializeObject<dynamic>(responseContent).caption;
-                    }
-                    else
-                    {
-                        _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
-                        return "Error: Could not get a description";
-                    }
-                }
-            }
-        }
 
 
-        public class EvaluationRequest
-        {
-            public List<string> description { get; set; }
-        }
 
         /// <summary>
         /// Receives an evaluation request and processes it to return predictions. This method logs the incoming request,
@@ -555,6 +548,13 @@ namespace WebAppBachelorProject.Controllers
             }
         }
 
+        //https://stackoverflow.com/questions/6309379/how-to-check-for-a-valid-base64-encoded-string/54143400#54143400
+        //Checking if it is a base64.
+        public static bool IsBase64String(string base64)
+        {
+            Span<byte> buffer = new Span<byte>(new byte[base64.Length]);
+            return Convert.TryFromBase64String(base64, buffer, out int bytesParsed);
+        }
 
 
 

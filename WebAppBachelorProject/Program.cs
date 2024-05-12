@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using WebAppBachelorProject.Areas.Identity.Data;
-using WebAppBachelorProject.DAL;
+using WebAppBachelorProject.DAL.Repositories;
 using WebAppBachelorProject.Data;
+using WebAppBachelorProject.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
@@ -25,9 +26,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDefaultIdentity<WebAppBachelorProjectUser>(options => options.SignIn.RequireConfirmedAccount = false) //Set to false so we do not require to confirm account. 
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+
+builder.Services.AddTransient<IImageProcessingService, ImageProcessingService>();
+
+
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IImageRepository, ImageRepository>();
+
+
 
 builder.Services.Configure<FormOptions>(options =>
 {

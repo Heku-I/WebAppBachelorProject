@@ -1,7 +1,7 @@
 ﻿using WebAppBachelorProject.Models;
 using ImageModel = WebAppBachelorProject.Models.Image;
 
-namespace WebAppBachelorProject.DAL
+namespace WebAppBachelorProject.DAL.Repositories
 {
     public interface IImageRepository
     {
@@ -14,7 +14,7 @@ namespace WebAppBachelorProject.DAL
 
         Task<IEnumerable<ImageModel>> GetByUser(string userId);
 
-        Task<bool> UpdateImagePath (string imageId,  string path);
+        Task<bool> UpdateImagePath(string imageId, string path);
 
         Task<bool> Delete(string imageId);
 

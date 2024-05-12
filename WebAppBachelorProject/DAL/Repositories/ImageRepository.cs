@@ -2,7 +2,7 @@
 using WebAppBachelorProject.Data;
 using ImageModel = WebAppBachelorProject.Models.Image;
 
-namespace WebAppBachelorProject.DAL
+namespace WebAppBachelorProject.DAL.Repositories
 {
     public class ImageRepository : IImageRepository
     {
