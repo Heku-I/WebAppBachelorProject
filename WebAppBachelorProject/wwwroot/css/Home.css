@@ -23,7 +23,7 @@
         color: #F4FAFF;
         background-color: #08090A;
         display: flex;
-        justify-content: center; 
+        justify-content: center;  
         align-items: center;
         transition: background-color 0.3s ease, color 0.3s ease;
     }
