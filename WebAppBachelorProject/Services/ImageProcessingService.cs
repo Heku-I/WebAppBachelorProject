@@ -32,7 +32,7 @@ namespace WebAppBachelorProject.Services
         /// if the operation is successful. If the server response is not successful, it returns an error message.</returns>
         public async Task<string> SendImageToDocker(byte[] imageBytes)
         {
-            _logger.LogInformation("SendImageToServer has been called.");
+            _logger.LogInformation("SERVICE: SendImageToDocker has been called.");
 
             using (var client = new HttpClient())
             {
@@ -65,6 +65,7 @@ namespace WebAppBachelorProject.Services
         //https://platform.openai.com/docs/guides/vision
         public async Task<List<string>> UploadToChatGPT(ImageUploadRequest request, string apiKey)
         {
+            _logger.LogInformation("SERVICE: UploadToChatGPT has been called.");
             OpenAIAPI api = new OpenAIAPI(apiKey);
             List<string> descriptions = new List<string>();
 
@@ -97,8 +98,37 @@ namespace WebAppBachelorProject.Services
 
 
 
+        public async Task<string> UploadToCustomModel(byte[] imageBytes, string apicustomEndpoint)
+        {
+
+            _logger.LogInformation("SERVICE: UploadToCustomModel has been called.");
 
 
+            using (var client = new HttpClient())
+            {
+                using (var content = new MultipartFormDataContent())
+                {
+                    //Create ByteArrayContent from image bytes, and add to form data content
+                    var imageContent = new ByteArrayContent(imageBytes);
+
+                    imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                    content.Add(imageContent, "image", "upload.jpg");
+
+                    var response = await client.PostAsync(apicustomEndpoint, content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        _logger.LogInformation($"Response: {responseContent}");
+                        return JsonConvert.DeserializeObject<dynamic>(responseContent).caption;
+                    }
+                    else
+                    {
+                        _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
+                        return "Error: Could not get a description";
+                    }
+                }
+            }
+        }
 
 
 

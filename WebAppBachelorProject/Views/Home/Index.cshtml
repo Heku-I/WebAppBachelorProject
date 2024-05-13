@@ -59,7 +59,7 @@
             <button type="button" class="collapsible" id="collapsible" hidden>Options &#10095;</button>
             <div id="selectModel" hidden>
                 <!--Description-->
-                <label for="descModel">Select an AI Description Model</label>
+                <label for="descModel">Select Description Model</label>
                 <select name="descModel" id="descModel">
                     <option value="ImageAble" selected>ImageAble</option>
                     <option value="ChatGPT">Gpt-4-Turbo (Vision)</option> 
@@ -67,12 +67,14 @@
                 </select>
                 <br />
 
-                <div id="customEndpointInput" hidden>
+                <div id="customEndpointDiv" hidden>
+                    <br />
                     <label for="customEndpoint">Endpoint:</label>
-                    <input type="text" id="customEndpoint" placeholder="xxxxxxxxxxx" />
+                    <input type="text" id="customEndpointInput" placeholder="E.g. http://hostname.123123.northeurope.azurecontainer.io:5000/predict" style="width: 500px;" />
                 </div>
 
                 <div id="chatGptEndpoint" hidden>
+                    <br />
                     <label for="chatGptApiKeyInput">API key:</label>
                     <input type="text" id="chatGptApiKeyInput" placeholder="sk-proj-5UnlbkFCRN8ZXjLeDO1AT3BlbkF..."  />
                     <br />
@@ -82,7 +84,7 @@
 
                 <br />
                 <!--Evaluation-->
-                <label for="evalModel">Select an AI Evaluation Model</label>
+                <label for="evalModel">Select Evaluation Model</label>
                 <select name="evalModel" id="evalModel">
                     <option value="NCAM" selected>NCAM</option>
                     <option value="N/A" disabled>N/A</option>
@@ -203,7 +205,7 @@
                 var previewTable = document.getElementById("previewTable");
                 var descriptionSelect = document.getElementById("descModel");
                 var collapsibleButton = document.getElementById("collapsible");
-                var customEndpointInput = document.getElementById('customEndpointInput'); 
+                var customEndpointInput = document.getElementById('customEndpointDiv'); 
                 var chatGptApiDiv = document.getElementById('chatGptEndpoint')
 
                 var imageData = null;
@@ -265,12 +267,14 @@
                                 sendMultipleImageData('/Image/DescFromChatGPT', chatGptApiKey);
                             }
 
-                            /*
+                            
                             if (descriptionSelect.value === "Custom") {
 
-                                sendMultipleImageData('/Image/Custom');
+                                 customEndpointUrl = document.getElementById("customEndpointInput").value; 
+
+                                sendMultipleImageData('/Image/Custom',"",customEndpointUrl);
                             }
-                            */
+                            
                         });
 
 
@@ -408,12 +412,6 @@
 
 
 
-
-
-
-
-
-
                 /*
                 ----------------------- SEND MULTIPLE IMAGE DATA -----------------------
                      Description:
@@ -424,9 +422,10 @@
                         buttons, and handling errors appropriately.
                 */
 
-                function sendMultipleImageData(apiUrl, apiKey = null) {
+                function sendMultipleImageData(apiUrl, apiKey = null, customEndpoint = null) {
                     var imageFiles = file_Input.files;
                     var customPrompt = document.getElementById('chatGptPrompt').value;
+                    var customEndpoint = document.getElementById('customEndpointInput').value; 
 
 
                     if (imageFiles && imageFiles.length > 0) {
@@ -450,8 +449,11 @@
                                         'Content-Type': 'application/json',
                                     };
 
-                                    if ( apiKey) {
+                                    if (apiKey) {
                                         headers['ApiKey'] = apiKey; 
+                                    }
+                                    if (customEndpoint) {
+                                        headers['CustomEndpoint'] = customEndpoint; 
                                     }
 
                                     fetch(apiUrl, {

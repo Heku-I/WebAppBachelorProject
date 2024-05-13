@@ -82,7 +82,7 @@ namespace WebAppBachelorProject.Controllers
                 //Convert the Base64 string to a byte array
                 byte[] imageBytes = Convert.FromBase64String(base64String);
 
-                //Pass the byte array to the ML model for prediction
+                //Pass the byte array to service for further processing
                 string description = await _imageProcessingService.SendImageToDocker(imageBytes);
 
                 if (description == null)
@@ -100,11 +100,14 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
+
+        //Need a summary!
+
         [HttpPost("DescFromChatGPT")]
         public async Task<IActionResult> UploadToChatGPT([FromBody] ImageUploadRequest request, [FromHeader] string apiKey)
         {
 
-            Console.WriteLine("GetMultipleImages has been called");
+            Console.WriteLine("UploadToChatGPT has been called");
 
             if (request == null)
             {
@@ -124,8 +127,66 @@ namespace WebAppBachelorProject.Controllers
                 return BadRequest("API-key is necessary. Please enter a API-key");
             }
 
-
+            //Pass the byte array to service for further processing
             var descriptions = await _imageProcessingService.UploadToChatGPT(request, apiKey);
+            return Ok(new { Descriptions = descriptions });
+        }
+
+
+
+        [HttpPost("Custom")]
+        public async Task<IActionResult> CustomModelGenerator ([FromBody] ImageUploadRequest request, [FromHeader] string customEndpoint)
+        {
+
+            Console.WriteLine("CustomModelGenerator has been called");
+
+            if (request == null)
+            {
+                Console.WriteLine("Request is null");
+                return BadRequest("Request cannot be null.");
+            }
+
+            if (request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
+            {
+                Console.WriteLine("ImageBase64Array list is null");
+                return BadRequest("Image list cannot be empty.");
+            }
+
+            if (customEndpoint == null)
+            {
+                Console.WriteLine("Endpoint-URL is necessary");
+                return BadRequest("Endpoint-URL is necessary. Please enter a Endpoint URL");
+            }
+
+
+            List<string> descriptions = new List<string>();
+
+            foreach (string base64String in request.ImageBase64Array)
+            {
+                if (!IsBase64String(base64String))
+                {
+                    Console.WriteLine("The 'base64String' is not a base64String.");
+                    return BadRequest("It is not a base64String");
+
+                }
+
+                //Convert the Base64 string to a byte array
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+
+                //Pass the byte array to service for further processing
+                string description = await _imageProcessingService.UploadToCustomModel(imageBytes, customEndpoint);
+
+                if (description == null)
+                {
+
+                    Console.WriteLine("Description is null. Please check Service.");
+                    return BadRequest("Description returned as null.");
+
+                }
+
+                descriptions.Add(description);
+            }
+
             return Ok(new { Descriptions = descriptions });
         }
 

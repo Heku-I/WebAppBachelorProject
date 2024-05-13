@@ -7,7 +7,9 @@ namespace WebAppBachelorProject.Services
     {
         Task<string> SendImageToDocker(byte[] imageBytes);
 
-        Task<List<string>> UploadToChatGPT(ImageUploadRequest request, string apiKey); 
+        Task<List<string>> UploadToChatGPT(ImageUploadRequest request, string apiKey);
+
+        Task<string> UploadToCustomModel(byte[] imageBytes, string apicustomEndpoint);
     }
 
 }
