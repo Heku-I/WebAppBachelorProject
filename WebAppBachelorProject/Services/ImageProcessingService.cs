@@ -63,37 +63,39 @@ namespace WebAppBachelorProject.Services
 
         //https://github.com/OkGoDoIt/OpenAI-API-dotnet?tab=readme-ov-file
         //https://platform.openai.com/docs/guides/vision
-        public async Task<List<string>> UploadToChatGPT(ImageUploadRequest request, string apiKey)
+        public async Task<string> UploadToChatGPT(byte[] imageBytes, string prompt, string apiKey)
         {
             _logger.LogInformation("SERVICE: UploadToChatGPT has been called.");
-            OpenAIAPI api = new OpenAIAPI(apiKey);
-            List<string> descriptions = new List<string>();
 
-            var defaultPrompt = "Create a description for the following image.";
-
-            var promptToSend = ""; 
-
-            if (request.Prompt == null)
+            try
             {
-                promptToSend = defaultPrompt;
-            }
-            else
-            {
-                promptToSend = request.Prompt;
-            }
+                OpenAIAPI api = new OpenAIAPI(apiKey);
 
-            foreach (string base64String in request.ImageBase64Array)
-            {
-                byte[] imageBytes = Convert.FromBase64String(base64String);
+                var defaultPrompt = "Create a description for the following image.";
+                var promptToSend = string.IsNullOrEmpty(prompt) ? defaultPrompt : prompt;
+
+                _logger.LogInformation($"SERVICE: Using prompt: {promptToSend}");
+
                 var result = await api.Chat.CreateChatCompletionAsync(promptToSend, ImageInput.FromImageBytes(imageBytes));
 
-                _logger.LogInformation($"Response from ChatGPT: {result}");
-                descriptions.Add(result.ToString());
-            }
+                if (result == null)
+                {
+                    _logger.LogError("SERVICE: OpenAI API returned null result.");
+                    return null;
+                }
 
-            _logger.LogInformation($"Description Array: {descriptions}");
-            return descriptions;
+                var description = result.ToString();
+                _logger.LogInformation($"SERVICE: Received description: {description}");
+
+                return description;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SERVICE: Exception occurred in UploadToChatGPT.");
+                return null;
+            }
         }
+
 
 
 
