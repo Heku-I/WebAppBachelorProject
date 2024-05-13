@@ -50,19 +50,32 @@
 
     <!-----BOOTSTRAP https://getbootstrap.com/docs/5.3/components/placeholders/ ------>
 
-        @if(Model != null && Model.Any())
+        @if (Model != null && Model.Any())
         {
-            @foreach (var upload in Model)
-            {
-                <div class="card" aria-hidden="true">
-                    <img src="@upload.ImagePath" class="card-img-top" alt="@upload.Description">
-                    <div class="card-body">
-                        <p class="card-text">@upload.Description</p>
-                        <a class="btn btn-primary disabled placeholder col-6" aria-disabled="true"></a>
+            <div class="row">
+                @foreach (var upload in Model)
+                {
+                    <div class="col-lg-4">
+                        <div class="card" aria-hidden="true">
+                            <img src="@upload.ImagePath" class="card-img-top" alt="@upload.Description">
+                            <div class="card-body">
+                                <p class="card-text">@upload.Description</p>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between">
+                                <form asp-action="Download" asp-route-id="@upload.ImageId">
+                                    <a href="#" onclick="this.parentNode.submit()">Download image</a>
+                                </form>
+                                <a asp-action="Edit" asp-route-id="@upload.ImageId" class="btn btn-dark">Edit description</a>
+                                <form asp-action="Delete" asp-route-id="@upload.ImageId" method="post">
+                                    <button type="submit" class="btn btn-danger">Delete image</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            }
-        }else
+                }
+            </div>
+        }
+        else
         {
             <div>
                 <h3>You have not saved any images to gallery.</h3>

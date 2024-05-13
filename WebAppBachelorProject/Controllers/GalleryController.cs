@@ -19,7 +19,8 @@ namespace WebAppBachelorProject.Controllers
         private readonly IImageRepository _imageRepository;
         private readonly ILogger<GalleryController> _logger;
 
-        public GalleryController(ApplicationDbContext context, IImageRepository imageRepository, ILogger<GalleryController> logger)
+        public GalleryController(ApplicationDbContext context, IImageRepository imageRepository,
+            ILogger<GalleryController> logger)
         {
             _context = context;
             _imageRepository = imageRepository;
@@ -31,19 +32,19 @@ namespace WebAppBachelorProject.Controllers
 
         [Authorize]
         public async Task<IActionResult> Index(
-             string sortOrder,
-             string currentFilter,
-             string searchString,
-             int? pageNumber
-            )
+            string sortOrder,
+            string currentFilter,
+            string searchString,
+            int? pageNumber
+        )
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _logger.LogInformation($"The gallery has been requested by user ID {userId}");
 
 
-            if(userId == null)
+            if (userId == null)
             {
-                _logger.LogError("No User"); 
+                _logger.LogError("No User");
                 Forbid("No user");
             }
 
@@ -63,7 +64,7 @@ namespace WebAppBachelorProject.Controllers
             var userImages = await _imageRepository.GetByUser(userId);
 
             var images = from s in _context.Images
-                           select s;
+                         select s;
             if (!String.IsNullOrEmpty(searchString))
             {
                 images = images.Where(s => s.Description.Contains(searchString));
@@ -86,7 +87,6 @@ namespace WebAppBachelorProject.Controllers
             int pageSize = 3;
             return View(await PaginatedList<Image>.CreateAsync(images.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
-
 
 
     }

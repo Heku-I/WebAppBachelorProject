@@ -135,7 +135,7 @@ namespace WebAppBachelorProject.Controllers
 
 
         [HttpPost("Custom")]
-        public async Task<IActionResult> CustomModelGenerator ([FromBody] ImageUploadRequest request, [FromHeader] string customEndpoint)
+        public async Task<IActionResult> CustomModelGenerator([FromBody] ImageUploadRequest request, [FromHeader] string customEndpoint)
         {
 
             Console.WriteLine("CustomModelGenerator has been called");
@@ -405,7 +405,7 @@ namespace WebAppBachelorProject.Controllers
                 }
                 else
                 {
-                    _logger.LogError($"No EXIF metadata found.");   
+                    _logger.LogError($"No EXIF metadata found.");
                 }
             }
         }
@@ -437,7 +437,7 @@ namespace WebAppBachelorProject.Controllers
                 return Forbid(); //You should not be able to register an image to DB if you are not logged in. 
             }
 
-            var dateCreated = DateTime.Today; 
+            var dateCreated = DateTime.Today;
 
             Models.Image image = new Models.Image
             {
@@ -446,7 +446,7 @@ namespace WebAppBachelorProject.Controllers
                 UserId = userId,
                 DateCreated = dateCreated,
                 Evaluation = evaluation
-                
+
             };
 
             //Loggers for debugging: 
@@ -513,7 +513,7 @@ namespace WebAppBachelorProject.Controllers
         /// <returns>Returns a FileContentResult containing the modified image with metadata as a downloadable file. 
         /// If an error occurs, it returns an appropriate HTTP status code with error details.
         /// </returns>
-        
+
         [HttpPost("downloadImageWithMetadata")]
         public async Task<IActionResult> DownloadImageWithMetadata(
 

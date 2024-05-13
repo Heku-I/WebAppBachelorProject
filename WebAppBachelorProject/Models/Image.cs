@@ -33,7 +33,7 @@ namespace WebAppBachelorProject.Models
         public DateTime DateCreated { get; set; }
 
         //Evaluation of the image.
-        public string Evaluation {  get; set; }
+        public string Evaluation { get; set; }
 
 
         //Navigation property for the ApplicationUser that owns this Image.
