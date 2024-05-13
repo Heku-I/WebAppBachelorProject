@@ -38,7 +38,7 @@ namespace WebAppBachelorProject.Services
             {
                 using (var content = new MultipartFormDataContent())
                 {
-                    // Create ByteArrayContent from image bytes, and add to form data content
+                    //Create ByteArrayContent from image bytes, and add to form data content
                     var imageContent = new ByteArrayContent(imageBytes);
                     imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
                     content.Add(imageContent, "image", "upload.jpg");
@@ -63,18 +63,28 @@ namespace WebAppBachelorProject.Services
 
         //https://github.com/OkGoDoIt/OpenAI-API-dotnet?tab=readme-ov-file
         //https://platform.openai.com/docs/guides/vision
-
-
-        public async Task<List<string>> UploadToChatGPT(ImageUploadRequest request)
+        public async Task<List<string>> UploadToChatGPT(ImageUploadRequest request, string apiKey)
         {
-            var apiKey = _configuration["OpenAI:ApiKey"];
             OpenAIAPI api = new OpenAIAPI(apiKey);
             List<string> descriptions = new List<string>();
+
+            var defaultPrompt = "Create a description for the following image.";
+
+            var promptToSend = ""; 
+
+            if (request.Prompt == null)
+            {
+                promptToSend = defaultPrompt;
+            }
+            else
+            {
+                promptToSend = request.Prompt;
+            }
 
             foreach (string base64String in request.ImageBase64Array)
             {
                 byte[] imageBytes = Convert.FromBase64String(base64String);
-                var result = await api.Chat.CreateChatCompletionAsync("Give me a description of the following image? Make it short.", ImageInput.FromImageBytes(imageBytes));
+                var result = await api.Chat.CreateChatCompletionAsync(promptToSend, ImageInput.FromImageBytes(imageBytes));
 
                 _logger.LogInformation($"Response from ChatGPT: {result}");
                 descriptions.Add(result.ToString());
@@ -85,37 +95,8 @@ namespace WebAppBachelorProject.Services
         }
 
 
-        /*
 
-        //https://github.com/OkGoDoIt/OpenAI-API-dotnet?tab=readme-ov-file
-        //https://platform.openai.com/docs/guides/vision
 
-        [HttpPost("DescFromChatGPT")]
-        public async Task<IActionResult> UploadToChatGPT([FromBody] ImageUploadRequest request)
-        {
-            var apiKey = _configuration["OpenAI:ApiKey"];
-            OpenAIAPI api = new OpenAIAPI(apiKey);
-
-            List<string> descriptions = new List<string>();
-
-            foreach (string base64String in request.ImageBase64Array)
-            {
-                byte[] imageBytes = Convert.FromBase64String(base64String);
-
-                var result = await api.Chat.CreateChatCompletionAsync("Give me a description of the following image? Make it short.",
-                    ImageInput.FromImageBytes(imageBytes));
-
-                _logger.LogInformation($"Repsonse from ChatGPT: {result}");
-
-                descriptions.Add(result.ToString());
-            }
-
-            _logger.LogInformation($"Description Array: {descriptions.ToString()} ");
-
-            return Ok(new { Descriptions = descriptions });
-        }
-
-        */
 
 
 

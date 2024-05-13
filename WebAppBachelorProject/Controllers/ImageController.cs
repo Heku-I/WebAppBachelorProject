@@ -101,11 +101,35 @@ namespace WebAppBachelorProject.Controllers
 
 
         [HttpPost("DescFromChatGPT")]
-        public async Task<IActionResult> UploadToChatGPT([FromBody] ImageUploadRequest request)
+        public async Task<IActionResult> UploadToChatGPT([FromBody] ImageUploadRequest request, [FromHeader] string apiKey)
         {
-            var descriptions = await _imageProcessingService.UploadToChatGPT(request);
+
+            Console.WriteLine("GetMultipleImages has been called");
+
+            if (request == null)
+            {
+                Console.WriteLine("Request is null");
+                return BadRequest("Request cannot be null.");
+            }
+
+            if (request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
+            {
+                Console.WriteLine("ImageBase64Array list is null");
+                return BadRequest("Image list cannot be empty.");
+            }
+
+            if (apiKey == null)
+            {
+                Console.WriteLine("API-key is necessary");
+                return BadRequest("API-key is necessary. Please enter a API-key");
+            }
+
+
+            var descriptions = await _imageProcessingService.UploadToChatGPT(request, apiKey);
             return Ok(new { Descriptions = descriptions });
         }
+
+
 
 
 

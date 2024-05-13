@@ -45,8 +45,8 @@
 
                             <dd>
                                 <div class="d-flex justify-content-center align-items-center mt-5">
-                                <input type="file" id="file_input" name="uploadfile" accept="image/*" multiple />
-                                <label for="file_input">Choose an image to upload</label
+                                <input type="file" id="file_input" name="uploadfile" accept="image/*" class="inputfile" data-multiple-caption="{count} files selected" multiple />
+                                <label for="file_input">Choose image to upload...</label
                                 </div>
                             </dd>
                         </div>
@@ -56,26 +56,42 @@
 
 
 
+            <button type="button" class="collapsible" id="collapsible" hidden>Options &#10095;</button>
             <div id="selectModel" hidden>
+                <!--Description-->
+                <label for="descModel">Select an AI Description Model</label>
+                <select name="descModel" id="descModel">
+                    <option value="ImageAble" selected>ImageAble</option>
+                    <option value="ChatGPT">Gpt-4-Turbo (Vision)</option> 
+                    <option value="Custom">Custom Endpoint</option>
+                </select>
+                <br />
 
-            <!--Description-->
-            <label for="descModel">Select a AI Description Model</label>
+                <div id="customEndpointInput" hidden>
+                    <label for="customEndpoint">Endpoint:</label>
+                    <input type="text" id="customEndpoint" placeholder="xxxxxxxxxxx" />
+                </div>
 
-            <select name="descModel" id="descModel">
-                <option value="ImageAble" selected> ImageAble </option>
-                <option value="ChatGPT"> gpt-4-turbo (N/A) </option>
+                <div id="chatGptEndpoint" hidden>
+                    <label for="chatGptApiKeyInput">API key:</label>
+                    <input type="text" id="chatGptApiKeyInput" placeholder="sk-proj-5UnlbkFCRN8ZXjLeDO1AT3BlbkF..."  />
+                    <br />
+                    <label for="chatGptPrompt">Custom prompt </label>
+                    <textarea id="chatGptPrompt" placeholder="Create a description for the following image. (default)" cols="20" rows="3"></textarea>
+                </div>
 
-            </select>
+                <br />
+                <!--Evaluation-->
+                <label for="evalModel">Select an AI Evaluation Model</label>
+                <select name="evalModel" id="evalModel">
+                    <option value="NCAM" selected>NCAM</option>
+                    <option value="N/A" disabled>N/A</option>
+                </select>
 
-            <!--Evaluation-->
-            <label for="evalModel">Select a AI Evaluation Model</label>
 
-            <select name="evalModel" id="evalModel">
-                <option value="NCAM" selected> NCAM </option>
-                <option value="N/A" disabled> N/A</option> 
-            </select>
 
             </div>
+
 
 
             <div id="GenerateButtons"></div>
@@ -186,15 +202,28 @@
                 var file_Input = document.getElementById("file_input"); //NEW
                 var previewTable = document.getElementById("previewTable");
                 var descriptionSelect = document.getElementById("descModel");
+                var collapsibleButton = document.getElementById("collapsible");
+                var customEndpointInput = document.getElementById('customEndpointInput'); 
+                var chatGptApiDiv = document.getElementById('chatGptEndpoint')
+
                 var imageData = null;
 
 
-                //NEW
+                //CALLING FUNCTION PREVIEW IMAGE TO SHOW THE TABLE WHEN IMAGE HAS BEEN UPLOADED.
+                //ALSO SHOWING THE COLLAPSE (OPTIONS)
                 file_Input.addEventListener("change", function () {
                     previewImage();
-
-                    document.getElementById("selectModel").hidden = false;
+                    document.getElementById("collapsible").hidden = false;
                 });
+
+
+
+                //ALSO SHOWING THE COLLAPSE (OPTIONS)
+                collapsibleButton.addEventListener('click', function(){
+                    var selectModelDiv = document.getElementById("selectModel");
+                    selectModelDiv.hidden = !selectModelDiv.hidden;
+                });
+
 
 
 
@@ -212,7 +241,17 @@
                     createGenerateButton: function () {
                         var sendButton = document.createElement('button');
                         sendButton.innerText = 'Generate Description';
-                        sendButton.classList.add('btn', 'btn-md', 'btn-success');
+                        sendButton.classList.add('generateButton');
+
+
+                        descriptionSelect.addEventListener('change', function () {
+
+                            chatGptApiDiv.hidden = descriptionSelect.value !== 'ChatGPT';
+
+                            customEndpointInput.hidden = descriptionSelect.value !== 'Custom';
+
+                        })
+
                         sendButton.addEventListener('click', function () {
 
                             if (descriptionSelect.value === "ImageAble") {
@@ -221,12 +260,19 @@
 
                             if (descriptionSelect.value === "ChatGPT") {
 
-                                sendMultipleImageData('/Image/DescFromChatGPT');
+                                chatGptApiKey = document.getElementById("chatGptApiKeyInput").value; 
 
+                                sendMultipleImageData('/Image/DescFromChatGPT', chatGptApiKey);
                             }
 
-                            
+                            /*
+                            if (descriptionSelect.value === "Custom") {
+
+                                sendMultipleImageData('/Image/Custom');
+                            }
+                            */
                         });
+
 
                         this.generateButtonContainer.appendChild(sendButton);
                     },
@@ -234,7 +280,7 @@
                     createUploadButton: function () {
                         var uploadButton = document.createElement('button');
                         uploadButton.innerText = 'Save All To Gallery';
-                        uploadButton.classList.add('btn', 'btn-dark');
+                        uploadButton.classList.add('saveAllButton');
                         uploadButton.addEventListener('click', function () {
                             saveAllImagesToGallery();
                         });
@@ -247,6 +293,35 @@
                 // Initialize the ButtonManager
                 ButtonManager.init();
 
+
+
+                //Upload button
+                //https://tympanus.net/codrops/2015/09/15/styling-customizing-file-inputs-smart-way/
+
+                 var inputs = document.querySelectorAll('.inputfile');
+                    Array.prototype.forEach.call(inputs, function(input) {
+                        var label = input.nextElementSibling,
+                            labelVal = label.innerHTML;
+
+                        input.addEventListener('change', function(e) {
+                            var fileName = '';
+                            if (this.files && this.files.length > 1) {
+                                fileName = (this.getAttribute('data-multiple-caption') || '').replace('{count}', this.files.length) + '';
+                            } else if (this.files.length === 1) {
+                                fileName = e.target.value.split('\\').pop();
+                            }
+
+                            if (fileName) {
+                                if(label.querySelector('span')) {
+                                    label.querySelector('span').innerHTML = fileName;
+                                } else {
+                                    label.innerHTML = fileName;
+                                }
+                            } else {
+                                label.innerHTML = labelVal;
+                            }
+                        });
+                    });
 
 
 
@@ -281,10 +356,10 @@
                     descriptionHeaderCell.innerHTML = "Description";
 
                     let evaluationHeaderCell = headers.insertCell(2);
-                    evaluationHeaderCell.innerHTML = "Evaluation";
+                    evaluationHeaderCell.innerHTML = "Accessibility score ";
 
                     let buttonHeaderCell = headers.insertCell(3);
-                    buttonHeaderCell.innerHTML = "Button";
+                    buttonHeaderCell.innerHTML = "";
 
 
                     //Looping through each selected file
@@ -309,9 +384,9 @@
 
                                     let newRow = previewTable.insertRow(-1);
                                     newRow.insertCell(0).innerHTML = img.outerHTML;
-                                    newRow.insertCell(1).innerHTML = "..."; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
-                                    newRow.insertCell(2).innerHTML = "..."; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
-                                    newRow.insertCell(3).innerHTML = "..."; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
+                                    newRow.insertCell(1).innerHTML = ""; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
+                                    newRow.insertCell(2).innerHTML = ""; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
+                                    newRow.insertCell(3).innerHTML = ""; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
  
 
                                     if (index === files.length - 1) {
@@ -330,6 +405,15 @@
                 }
 
 
+
+
+
+
+
+
+
+
+
                 /*
                 ----------------------- SEND MULTIPLE IMAGE DATA -----------------------
                      Description:
@@ -340,8 +424,10 @@
                         buttons, and handling errors appropriately.
                 */
 
-                function sendMultipleImageData(apiUrl, needsAuth = false, apiKey = null) {
+                function sendMultipleImageData(apiUrl, apiKey = null) {
                     var imageFiles = file_Input.files;
+                    var customPrompt = document.getElementById('chatGptPrompt').value;
+
 
                     if (imageFiles && imageFiles.length > 0) {
                         var imageDataArray = [];
@@ -355,14 +441,17 @@
                                 imageDataArray.push(base64String);
 
                                 if (imageDataArray.length === imageFiles.length) {
-                                    var jsonData = { imageBase64Array: imageDataArray };
+                                    var jsonData = { 
+                                        imageBase64Array: imageDataArray,
+                                        prompt: customPrompt 
+                                    };
 
                                     var headers = {
                                         'Content-Type': 'application/json',
                                     };
 
-                                    if (needsAuth && apiKey) {
-                                        headers['Authorization'] = `Bearer ${apiKey}`;
+                                    if ( apiKey) {
+                                        headers['ApiKey'] = apiKey; 
                                     }
 
                                     fetch(apiUrl, {
@@ -581,7 +670,7 @@
                         var numericValue = parseFloat(evaluation[i]);
 
                         if (!isNaN(numericValue)) {
-                            var formattedValue = numericValue.toFixed(4);
+                            var formattedValue = numericValue.toFixed(2);
 
                             //Append the formatted value to the existing results
                             formattedResults += formattedValue + '<br>';
@@ -784,7 +873,8 @@
 
                     const newDescription = document.getElementById('descriptionTextarea').value;
                     rows[row].cells[1].innerText = newDescription;
-                    $('#exampleModal').modal('hide'); 
+                    $('#exampleModal').modal('hide');
+                    generateEvaluation();
 
                     //Not sure if I want to run the evaluation here again or not. 
                 }

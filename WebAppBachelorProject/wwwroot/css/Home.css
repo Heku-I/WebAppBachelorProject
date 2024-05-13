@@ -3,41 +3,52 @@
 }
 
 
-/*file input styling*/
-#file_input{
-   
-    width:0.1px;
-    height:0.1px;
-    opacity:0;
-    overflow:hidden;
-    position:absolute;
-    z-index:-1;
+/*file input styling
+    SOURCES:
+    https://tympanus.net/codrops/2015/09/15/styling-customizing-file-inputs-smart-way/
+*/
+
+
+
+.inputfile {
+    width: 0.5px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
 }
 
-    #file_input + label {
-        border-radius: 1em;
-        height: 8em;
-        width: 28em;
-        font-size: 1.3em;
-        font-weight: 500;
-        color: #F4FAFF;
+    .inputfile + label {
+        font-size: 1.25em;
+        font-weight: 700;
+        font-family: "Inter", sans-serif;
+        color: white;
         background-color: #08090A;
         display: flex;
-        justify-content: center; 
         align-items: center;
-        transition: background-color 0.3s ease, color 0.3s ease;
+        justify-content: center;
+        padding: 25px;
+        border-radius: 30px;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        border-style: none;
     }
 
-        #file_input:focus + label,
-        #file_input + label:hover {
-            background-color: #D3D3D3;
-            color: #08090A;
+        .inputfile:focus + label,
+        .inputfile + label:hover {
+            background-color: #212529;
         }
-    
 
-#file_input + label{
-    cursor:pointer;
+
+    .inputfile + label {
+        cursor: pointer; 
+    }
+
+    .inputfile:focus + label {
+	outline: 1px dotted #000;
+	outline: -webkit-focus-ring-color auto 5px;
 }
+
 
 /*Model selection styling*/
 
@@ -61,6 +72,7 @@
     border: none;
     transition: transform 0.3s ease-in-out;
     margin-bottom: 20px;
+
 }
 
     .card:hover {
@@ -71,6 +83,7 @@
     object-fit: cover;
     max-height: 200px;
     border-radius: 15px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
 .card-body {
@@ -92,3 +105,61 @@
     border-radius: 20px; /* Add border-radius for rounded corners */
     margin-bottom: 20px;
 }
+
+
+
+
+/*ADVANCED OPTIONS STYLING*/
+
+.collapsible {
+    background-color: inherit;
+    color: #212529;
+    cursor: pointer;
+    padding: 0;
+    border: none;
+    text-align: left;
+    font-size: 15px;
+}
+
+
+.generateButton {
+    font-size: 1.25em;
+    font-weight: 700;
+    font-family: "Inter", sans-serif;
+    color: white;
+    background-color: #7cc6fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-radius: 30px;
+    border-style: none; 
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    margin-right:10px;
+}
+
+    .generateButton:focus,
+    .generateButton:hover {
+        background-color: #212529;
+    }
+
+
+.saveAllButton {
+    font-size: 1.25em;
+    font-weight: 700;
+    font-family: "Inter", sans-serif;
+    color: white;
+    background-color: #212529;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-radius: 30px;
+    border-style: none;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+    .saveAllButton:focus,
+    .saveAllButton:hover {
+        background-color: #7cc6fe;
+    }
