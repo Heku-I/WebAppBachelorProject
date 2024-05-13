@@ -9,6 +9,7 @@ using WebAppBachelorProject.DAL.Repositories;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
 using WebAppBachelorProject.Services;
+using static OpenAI_API.Chat.ChatMessage;
 using ImageSharpImage = SixLabors.ImageSharp.Image;
 
 namespace WebAppBachelorProject.Controllers
@@ -127,8 +128,29 @@ namespace WebAppBachelorProject.Controllers
                 return BadRequest("API-key is necessary. Please enter a API-key");
             }
 
-            //Pass the byte array to service for further processing
-            var descriptions = await _imageProcessingService.UploadToChatGPT(request, apiKey);
+            var prompt = request.Prompt; 
+
+            List<string> descriptions = new List<string>();
+
+
+            foreach (string base64String in request.ImageBase64Array)
+            {
+
+                if (!IsBase64String(base64String))
+                {
+                    Console.WriteLine("The 'base64String' is not a base64String.");
+                    return BadRequest("It is not a base64String");
+
+                }
+
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+
+                string description = await _imageProcessingService.UploadToChatGPT(imageBytes, prompt, apiKey); 
+
+                descriptions.Add(description);
+            }
+
+            Console.WriteLine("UploadToChatGPT: Success");
             return Ok(new { Descriptions = descriptions });
         }
 

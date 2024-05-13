@@ -61,7 +61,7 @@ namespace ImageAble.Tests
 
 
 
-        //----------    GetMultipleImages ---------------
+        //-------------------------   GetMultipleImages -------------------------//
 
         //1. Checking if the request is null.
         [Test]
@@ -207,6 +207,165 @@ namespace ImageAble.Tests
         }
 
 
+
+
+        //-------------------------    UploadToChatGPT -------------------------//
+
+        //7. Checking if the request is null.
+        [Test]
+        public async Task UploadToChatGPT_NullRequest_ReturnsBadRequestWithMessage()
+        {
+            var apikey = "apikey";
+
+            //Act
+            var result = await _controller.UploadToChatGPT(null, apikey) as BadRequestObjectResult;
+
+            //Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+
+
+            var actualMethodReturn = result.Value;
+            Assert.AreEqual("Request cannot be null.", actualMethodReturn);
+        }
+
+
+        //8. Checking if the request.imageBase64Array is null.
+        [Test]
+        public async Task UploadToChatGPT_ImageBase64Array_IsNull_ReturnsBadRequestWithMessage()
+        {
+            //Arrange
+            var request = new ImageUploadRequest { ImageBase64Array = new List<string>() };
+            var apikey = "apikey"; 
+
+
+            //Act
+            var result = await _controller.UploadToChatGPT(request, apikey) as BadRequestObjectResult;
+
+            //Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+
+
+            var actualMethodReturn = result.Value;
+            Assert.AreEqual("Image list cannot be empty.", actualMethodReturn);
+        }
+
+
+        //9. Checking if request.imageBase64Array is empty.
+        [Test]
+        public async Task UploadToChatGPT_ImageBase64Array_IsEmpty_ReturnsBadRequestWithMessage()
+        {
+            //Arrange
+            var request = new ImageUploadRequest { ImageBase64Array = new List<string>() };
+            var apikey = "apiKey";
+
+
+            //Act
+            var result = await _controller.UploadToChatGPT(request, apikey) as BadRequestObjectResult;
+
+            //Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+
+
+            var actualMethodReturn = result.Value;
+            Assert.AreEqual("Image list cannot be empty.", actualMethodReturn);
+        }
+
+
+        //10. Checking if imageBase64 string is invalid.
+        [Test]
+        public async Task UploadToChatGPT_InvalidBase64String_ReturnsBadRequestWithMessage()
+        {
+            var apikey = "apiKey";
+            //Arrange
+            var request = new ImageUploadRequest
+            {
+                ImageBase64Array = new List<string> { "Not_A_Valid_Base64_String" }
+            };
+
+            //Act
+            var result = await _controller.UploadToChatGPT(request, apikey) as BadRequestObjectResult;
+
+            //Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+            var actualMessage = result.Value;
+            Assert.AreEqual("It is not a base64String", actualMessage);
+        }
+
+
+        //11. Checking if API key is null
+        [Test]
+        public async Task UploadToChatGPTs_apiKey_IsNull_ReturnsBadRequestWithMessage()
+        {
+            //Arrange
+
+            var validBase64String = "stt6gx/LzXjhTJs33+MKxg==";
+
+            var request = new ImageUploadRequest
+            {
+                ImageBase64Array = new List<string> { validBase64String, validBase64String }
+            };
+
+            //Act
+            var result = await _controller.UploadToChatGPT(request, null) as BadRequestObjectResult;
+
+            //Assert
+            Assert.IsNotNull(result, "The result should not be null.");
+
+
+            var actualMethodReturn = result.Value;
+            Assert.AreEqual("API-key is necessary. Please enter a API-key", actualMethodReturn);
+        }
+
+
+        //12. Checking if method is successful with correct input.
+        [Test]
+        public async Task UploadToChatGPT_Successful_ReturnsOkWithDescriptions()
+        {
+            // Arrange
+            var apiKey = "apiKey";
+            var validBase64String = "stt6gx/LzXjhTJs33+MKxg==";
+            var expectedDescriptions = new List<string> { "Description1", "Description2" };
+            var request = new ImageUploadRequest
+            {
+                ImageBase64Array = new List<string> { validBase64String, validBase64String },
+                Prompt = "Test prompt"
+            };
+
+            _mockImageProcessingService.SetupSequence(x => x.UploadToChatGPT(It.IsAny<byte[]>(), It.IsAny<string>(), apiKey))
+                .ReturnsAsync("Description1")
+                .ReturnsAsync("Description2");
+
+            // Act
+            var result = await _controller.UploadToChatGPT(request, apiKey) as OkObjectResult;
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<OkObjectResult>(result);
+
+            Assert.IsNotNull(result.Value, "The result value should not be null.");
+
+            // Parsing the JSON object from the result.Value
+            var jsonObject = Newtonsoft.Json.JsonConvert.SerializeObject(result.Value);
+            var actualResult = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(jsonObject);
+
+            Assert.IsTrue(actualResult.ContainsKey("Descriptions"), "The key 'Descriptions' was not found.");
+            var descriptions = actualResult["Descriptions"];
+            Assert.IsNotNull(descriptions, "Descriptions should not be null.");
+            Assert.AreEqual(2, descriptions.Count, "There should be two descriptions.");
+            CollectionAssert.AreEqual(expectedDescriptions, descriptions, "Descriptions should match expected values.");
+        }
+
+
+
+
+
+
+
+
+
+
+
+        //-------------------------    CustomModelGenerator -------------------------//
 
 
 
