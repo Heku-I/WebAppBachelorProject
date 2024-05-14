@@ -8,104 +8,140 @@
     ViewData["Title"] = "Gallery";
     var userId = UserManager.GetUserId(User);}
 
+<!DOCTYPE html>
+<html lang="en">
 
-
-<span class="d-flex" id="skew-bg"> </span>
-<div class="container mt-5">
-    <h1 class="display-3" style="font-weight: 900">
-        Browse
-        <small class="mb-4 display-5" style="font-weight: 500">
-            your image
-            <br>
-            gallery!
-        </small>
-    </h1>
-</div>
-
-
-
-
-<div class="container mt-5">
-    <section id="search-section" class="text-center mt-5" style="margin-top:20px;">
-
-        <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
-        <!--------- SEARCH BAR ---------->
-        <form asp-action="Index" method="get">
-            <div class="form-actions no-color">
-                <p>
-                    Search by description: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
-                    <input type="submit" value="Search" class="btn btn-default" /> |
-                    <a asp-action="Index">Back to Full List</a>
-                </p>
-            </div>
-        </form>
-
-
-    </section>
-
-
-    <section class="mt-5" id="showcase">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Image Gallery</title>
+        <link rel="stylesheet" href="css/Gallery.css" />
+    </head>
+    <body>
+        <span class="d-flex" id="skew-bg"> </span>
+        <div class="container mt-5">
+            <h1 class="display-3" style="font-weight: 900">
+                Browse
+                <small class="mb-4 display-5" style="font-weight: 500">
+                    your image
+                    <br>
+                    gallery!
+                </small>
+            </h1>
+        </div>
 
 
 
-    <!-----BOOTSTRAP https://getbootstrap.com/docs/5.3/components/placeholders/ ------>
 
-        @if (Model != null && Model.Any())
-        {
-            <div class="row">
-                @foreach (var upload in Model)
+        <div class="container mt-5">
+            <section id="search-section" class="text-center mt-5" style="margin-top:20px;">
+
+                <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
+                <!--------- SEARCH BAR ---------->
+                <form asp-action="Index" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            Search by description: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+                            <input type="submit" value="Search" class="btn btn-default" /> |
+                            <a asp-action="Index">Back to Full List</a>
+                        </p>
+                    </div>
+                </form>
+
+
+            </section>
+
+
+            <section class="mt-5" id="showcase">
+
+
+
+            <!-----BOOTSTRAP https://getbootstrap.com/docs/5.3/components/placeholders/ ------>
+                @if (Model != null && Model.Any())
                 {
-                    <div class="col-lg-4">
-                        <div class="card" aria-hidden="true">
-                            <img src="/Uploads/@upload.ImagePath" class="card-img-top" alt="@upload.Description">
-                            <div class="card-body">
-                                <p class="card-text">@upload.Description</p>
+                    <div class="row">
+                        @foreach (var upload in Model)
+                        {
+                            <div class="col-lg-4">
+                                <div class="card" aria-hidden="true">
+                                    <img src="@upload.ImagePath" class="card-img-top" alt="@upload.Description">
+                                    <div class="card-body">
+                                        <p class="card-text">@upload.Description</p>
+                                    </div>
+                                    <div class="card-footer d-flex justify-content-between">
+                                    <a class="btn btn-dark download_btn" onclick="downloadImage('@upload.ImagePath')">Download image</a>
+                                    <a class="btn btn-dark">Edit description</a>
+                                        <a class="btn btn-danger">Delete image</a>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-footer d-flex justify-content-between">
-                                
-                                <a class="btn btn-dark">Download image</a>
-                                <a class="btn btn-dark">Edit description</a>
-                                <a class="btn btn-danger">Delete image</a>
-
-                            </div>
-                        </div>
+                        }
                     </div>
                 }
-            </div>
-        }
-        else
-        {
-            <div>
-                <h3>You have not saved any images to gallery.</h3>
-                <a action="index" asp-controller="Home">Click Here to Generate Descriptions and Save Your Images!</a>
-            </div>
-        }
-
-        @{
-            var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
-            var nextDisabled = !Model.HasNextPage ? "disabled" : "";
-        }
+                else
+                {
+                    <div>
+                        <h3>You have not saved any images to gallery.</h3>
+                        <a action="index" asp-controller="Home">Click Here to Generate Descriptions and Save Your Images!</a>
+                    </div>
+                }
 
 
-        <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
-        <!---//Previous and next buttons-->
+                @{
+                    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+                    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+                }
 
-        <a asp-action="Index"
-           asp-route-sortOrder="@ViewData["CurrentSort"]"
-           asp-route-pageNumber="@(Model.PageIndex - 1)"
-           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-           class="btn btn-default @prevDisabled">
-            Previous
-        </a>
-        <a asp-action="Index"
-           asp-route-sortOrder="@ViewData["CurrentSort"]"
-           asp-route-pageNumber="@(Model.PageIndex + 1)"
-           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-           class="btn btn-default @nextDisabled">
-            Next
-        </a>
 
-    </section>
+                <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
+                <!---//Previous and next buttons-->
 
-</div>
+                <div class="pag" id="pag">
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   asp-route-pageNumber="@(Model.PageIndex - 1)"
+                   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                   class="btn btn-default  @prevDisabled">
+                    Previous
+                </a>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewData["CurrentSort"]"
+                   asp-route-pageNumber="@(Model.PageIndex + 1)"
+                   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                   class="btn btn-default @nextDisabled">
+                    Next
+                </a>
+                </div>
 
+            </section>
+
+        </div>
+
+
+        <script>
+
+            /*
+            To donwload the image.
+
+            */
+            function downloadImage(imagePath) {
+
+                window.location.href = '/Gallery/DownloadImage?imagePath=' + encodeURIComponent(imagePath);
+            
+            }
+
+
+
+
+
+
+
+
+        </script>
+
+
+    </body>
+</html>
+
+
+  

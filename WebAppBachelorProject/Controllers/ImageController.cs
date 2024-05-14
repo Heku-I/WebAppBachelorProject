@@ -388,7 +388,7 @@ namespace WebAppBachelorProject.Controllers
                     CheckImageMetadata(fullPath);
 
                     _logger.LogInformation($"Image has been saved successfully. Sending to ImageToDB(desc, path, eval)");
-                    await ImageToDB(description, fullPath, evaluation);
+                    await ImageToDB(description, fullPath, evaluation, fileName);
                 }
                 catch (Exception ex)
                 {
@@ -439,7 +439,7 @@ namespace WebAppBachelorProject.Controllers
         /// <returns>Success or false</returns>
         /// 
         [Authorize]
-        public async Task<IActionResult> ImageToDB(string description, string path, string evaluation)
+        public async Task<IActionResult> ImageToDB(string description, string path, string evaluation, string filename)
         {
             _logger.LogInformation("ImageController: ImageToDB is reached.");
 
@@ -458,12 +458,16 @@ namespace WebAppBachelorProject.Controllers
                 return Forbid(); //You should not be able to register an image to DB if you are not logged in. 
             }
 
+            string relativePath = $"/Uploads/{filename}";
+
+
+
             var dateCreated = DateTime.Today;
 
             Models.Image image = new Models.Image
             {
                 Description = description,
-                ImagePath = path,
+                ImagePath = relativePath,
                 UserId = userId,
                 DateCreated = dateCreated,
                 Evaluation = evaluation

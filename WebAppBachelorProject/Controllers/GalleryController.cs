@@ -29,7 +29,6 @@ namespace WebAppBachelorProject.Controllers
 
 
         //https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-8.0
-
         [Authorize]
         public async Task<IActionResult> Index(
             string sortOrder,
@@ -38,17 +37,18 @@ namespace WebAppBachelorProject.Controllers
             int? pageNumber
         )
         {
+            // Retrieve the user ID from the current user claims
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _logger.LogInformation($"The gallery has been requested by user ID {userId}");
 
-
+            // Check if the user ID is null and handle it accordingly
             if (userId == null)
             {
                 _logger.LogError("No User");
-                Forbid("No user");
+                return Forbid("No user");
             }
 
-
+            // Handle the search string and page number
             if (searchString != null)
             {
                 pageNumber = 1;
@@ -58,19 +58,17 @@ namespace WebAppBachelorProject.Controllers
                 searchString = currentFilter;
             }
 
-
             ViewData["CurrentFilter"] = searchString;
 
-            var userImages = await _imageRepository.GetByUser(userId);
+            var userImages = _imageRepository.GetByUserQueryable(userId);
 
-            var images = from s in _context.Images
+            var images = from s in userImages
                          select s;
             if (!String.IsNullOrEmpty(searchString))
             {
                 images = images.Where(s => s.Description.Contains(searchString));
             }
 
-            //Sorting not working yet!
             switch (sortOrder)
             {
                 case "Date":
@@ -85,8 +83,38 @@ namespace WebAppBachelorProject.Controllers
             }
 
             int pageSize = 3;
+
             return View(await PaginatedList<Image>.CreateAsync(images.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
+
+
+
+
+
+        public IActionResult DownloadImage(string imagePath)
+        {
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                return BadRequest("Image path is not specified.");
+            }
+
+            _logger.LogInformation($"Imagepath: {imagePath}"); 
+
+            var path = Path.Combine("wwwroot", imagePath);
+
+            if (!System.IO.File.Exists(path))
+            {
+                _logger.LogError($"Image is not found with this path: {path}");
+                return NotFound("Image not found.");
+            }
+
+            var fileName = Path.GetFileName(path);
+            var fileBytes = System.IO.File.ReadAllBytes(path);
+            return File(fileBytes, "application/octet-stream", fileName);
+        }
+
+
+
 
 
     }

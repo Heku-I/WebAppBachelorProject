@@ -164,12 +164,6 @@ namespace ImageAble.Tests
         }
 
 
-        public class ImageResult
-        {
-            public List<string> Descriptions { get; set; }
-        }
-
-
         //6. Checking if method is successful with correct input.
         [Test]
         public async Task GetMultipleImages_Successful_ReturnsOkWithDescriptions()

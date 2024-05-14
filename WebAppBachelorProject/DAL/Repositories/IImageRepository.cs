@@ -18,5 +18,7 @@ namespace WebAppBachelorProject.DAL.Repositories
 
         Task<bool> Delete(string imageId);
 
+        public IQueryable<ImageModel> GetByUserQueryable(string userId); 
+
     }
 }

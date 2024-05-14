@@ -107,6 +107,12 @@ namespace WebAppBachelorProject.DAL.Repositories
             return true;
         }
 
+        public IQueryable<ImageModel> GetByUserQueryable(string userId)
+        {
+            return _context.Images.Where(img => img.UserId == userId);
+        }
+
+
         public Task<IEnumerable<ImageModel>> GetById(string imageId)
         {
             throw new NotImplementedException();
