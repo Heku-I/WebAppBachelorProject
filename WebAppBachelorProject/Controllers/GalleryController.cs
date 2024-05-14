@@ -38,17 +38,18 @@ namespace WebAppBachelorProject.Controllers
             int? pageNumber
         )
         {
+            // Retrieve the user ID from the current user claims
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _logger.LogInformation($"The gallery has been requested by user ID {userId}");
 
-
+            // Check if the user ID is null and handle it accordingly
             if (userId == null)
             {
                 _logger.LogError("No User");
-                Forbid("No user");
+                return Forbid("No user");
             }
 
-
+            // Handle the search string and page number
             if (searchString != null)
             {
                 pageNumber = 1;
@@ -58,19 +59,21 @@ namespace WebAppBachelorProject.Controllers
                 searchString = currentFilter;
             }
 
-
+            // Store the current filter in ViewData for use in the view
             ViewData["CurrentFilter"] = searchString;
 
-            var userImages = await _imageRepository.GetByUser(userId);
+            // Fetch images associated with the user
+            var userImages = _imageRepository.GetByUserQueryable(userId);
 
-            var images = from s in _context.Images
+            // Apply filtering based on the search string
+            var images = from s in userImages
                          select s;
             if (!String.IsNullOrEmpty(searchString))
             {
                 images = images.Where(s => s.Description.Contains(searchString));
             }
 
-            //Sorting not working yet!
+            // Apply sorting based on the sortOrder parameter
             switch (sortOrder)
             {
                 case "Date":
@@ -84,9 +87,13 @@ namespace WebAppBachelorProject.Controllers
                     break;
             }
 
+            // Define the page size
             int pageSize = 3;
+
+            // Return the view with paginated list of images
             return View(await PaginatedList<Image>.CreateAsync(images.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
+
 
 
     }

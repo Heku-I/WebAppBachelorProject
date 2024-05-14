@@ -8,7 +8,15 @@
     ViewData["Title"] = "Gallery";
     var userId = UserManager.GetUserId(User);}
 
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="css/Gallery.css" />
+</head>
 
 <span class="d-flex" id="skew-bg"> </span>
 <div class="container mt-5">
@@ -49,7 +57,6 @@
 
 
     <!-----BOOTSTRAP https://getbootstrap.com/docs/5.3/components/placeholders/ ------>
-
         @if (Model != null && Model.Any())
         {
             <div class="row">
@@ -57,16 +64,14 @@
                 {
                     <div class="col-lg-4">
                         <div class="card" aria-hidden="true">
-                            <img src="/Uploads/@upload.ImagePath" class="card-img-top" alt="@upload.Description">
+                            <img src="@upload.ImagePath" class="card-img-top" alt="@upload.Description">
                             <div class="card-body">
                                 <p class="card-text">@upload.Description</p>
                             </div>
                             <div class="card-footer d-flex justify-content-between">
-                                
                                 <a class="btn btn-dark">Download image</a>
                                 <a class="btn btn-dark">Edit description</a>
                                 <a class="btn btn-danger">Delete image</a>
-
                             </div>
                         </div>
                     </div>
@@ -81,6 +86,7 @@
             </div>
         }
 
+
         @{
             var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
             var nextDisabled = !Model.HasNextPage ? "disabled" : "";
@@ -90,11 +96,12 @@
         <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
         <!---//Previous and next buttons-->
 
+        <div class="pag" id="pag">
         <a asp-action="Index"
            asp-route-sortOrder="@ViewData["CurrentSort"]"
            asp-route-pageNumber="@(Model.PageIndex - 1)"
            asp-route-currentFilter="@ViewData["CurrentFilter"]"
-           class="btn btn-default @prevDisabled">
+           class="btn btn-default  @prevDisabled">
             Previous
         </a>
         <a asp-action="Index"
@@ -104,6 +111,7 @@
            class="btn btn-default @nextDisabled">
             Next
         </a>
+        </div>
 
     </section>
 
