@@ -29,7 +29,6 @@ namespace WebAppBachelorProject.Controllers
 
 
         //https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-8.0
-
         [Authorize]
         public async Task<IActionResult> Index(
             string sortOrder,
@@ -59,13 +58,10 @@ namespace WebAppBachelorProject.Controllers
                 searchString = currentFilter;
             }
 
-            // Store the current filter in ViewData for use in the view
             ViewData["CurrentFilter"] = searchString;
 
-            // Fetch images associated with the user
             var userImages = _imageRepository.GetByUserQueryable(userId);
 
-            // Apply filtering based on the search string
             var images = from s in userImages
                          select s;
             if (!String.IsNullOrEmpty(searchString))
@@ -73,7 +69,6 @@ namespace WebAppBachelorProject.Controllers
                 images = images.Where(s => s.Description.Contains(searchString));
             }
 
-            // Apply sorting based on the sortOrder parameter
             switch (sortOrder)
             {
                 case "Date":
@@ -87,12 +82,38 @@ namespace WebAppBachelorProject.Controllers
                     break;
             }
 
-            // Define the page size
             int pageSize = 3;
 
-            // Return the view with paginated list of images
             return View(await PaginatedList<Image>.CreateAsync(images.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
+
+
+
+
+
+        public IActionResult DownloadImage(string imagePath)
+        {
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                return BadRequest("Image path is not specified.");
+            }
+
+            _logger.LogInformation($"Imagepath: {imagePath}"); 
+
+            var path = Path.Combine("wwwroot", imagePath);
+
+            if (!System.IO.File.Exists(path))
+            {
+                _logger.LogError($"Image is not found with this path: {path}");
+                return NotFound("Image not found.");
+            }
+
+            var fileName = Path.GetFileName(path);
+            var fileBytes = System.IO.File.ReadAllBytes(path);
+            return File(fileBytes, "application/octet-stream", fileName);
+        }
+
+
 
 
 

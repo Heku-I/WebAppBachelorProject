@@ -458,7 +458,7 @@ namespace WebAppBachelorProject.Controllers
                 return Forbid(); //You should not be able to register an image to DB if you are not logged in. 
             }
 
-            string relativePath = $"/uploads/{filename}";
+            string relativePath = $"/Uploads/{filename}";
 
 
 
