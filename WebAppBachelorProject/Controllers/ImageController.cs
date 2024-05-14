@@ -9,7 +9,6 @@ using WebAppBachelorProject.DAL.Repositories;
 using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
 using WebAppBachelorProject.Services;
-using static OpenAI_API.Chat.ChatMessage;
 using ImageSharpImage = SixLabors.ImageSharp.Image;
 
 namespace WebAppBachelorProject.Controllers
@@ -128,7 +127,7 @@ namespace WebAppBachelorProject.Controllers
                 return BadRequest("API-key is necessary. Please enter a API-key");
             }
 
-            var prompt = request.Prompt; 
+            var prompt = request.Prompt;
 
             List<string> descriptions = new List<string>();
 
@@ -145,7 +144,7 @@ namespace WebAppBachelorProject.Controllers
 
                 byte[] imageBytes = Convert.FromBase64String(base64String);
 
-                string description = await _imageProcessingService.UploadToChatGPT(imageBytes, prompt, apiKey); 
+                string description = await _imageProcessingService.UploadToChatGPT(imageBytes, prompt, apiKey);
 
                 descriptions.Add(description);
             }
