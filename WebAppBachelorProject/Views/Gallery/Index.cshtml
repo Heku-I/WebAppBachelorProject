@@ -39,11 +39,12 @@
                 <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
                 <!--------- SEARCH BAR ---------->
                 <form asp-action="Index" method="get">
-                    <div class=" row d-flex justify-content-center">
+                    <div class=" row justify-content-center">
                         <div class="col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group">
                             <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" class=" form-control form-control-lg rounded-3" placeholder="Search by description:" />
-                            <button type="submit" value="Search" class="btn btn-dark">Search </button> 
+                            <button type="submit" value="Search" id="Search" class="btn btn-dark">Search</button>/> 
+                            
                             </div>
                             
                             <a asp-action="Index">Back to Full List</a>
