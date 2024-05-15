@@ -12,37 +12,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/site.css" />
     <style>
 
         body {
             overflow-y: scroll;
         }
-
-        h1{
-            margin-top: 1em; 
-        }
-
-        h1, p, label, a {
-            color: #000; 
-        }
-
-
-        body {
-            font-family: "Inter", sans-serif;
-            
-        }
-
-        .rounded-input {
-            width: 80%;
-            border-radius: 40px;
-
-        }
-        .rounded-button {
-            border-radius: 40px;
-            width: 80%;
-        }
-
 
         .text-end a:hover{
             color: #fff; 
@@ -54,18 +29,18 @@
     </style>
 </head>
 
-<body>
-    <span id=skew-bg></span>
-    <div class="container ">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-
-                <h1 class="display-4" style="font-weight: 900">
-                    Welcome
-                    <small class="mb-4 display-6" style="font-weight: 500">
-                        back.
+<body class="bg-light">
+<span id=skew-bg></span>
+<div class="container d-flex align-items-center min-vh-90">
+<div class="row justify-content-center w-100">
+    <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+        <div class="card rounded-4">
+            <div class="card-body p-5 bg-transparent">
+                <h1 class="display-3" style="font-weight: 900">
+                    Welcome back!
+                    <small class="mb-4 display-5" style="font-weight: 500">
                         <br>
-                        Enter login details
+                        Log into your account!
                     </small>
                 </h1>
 
@@ -73,17 +48,17 @@
 
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                    <div class="mb-5 col-xs-4 rounded-pill form-control-lg">
+                    <div class="mb-3 ">
                         <label asp-for="Input.Email" class="form-label">Email</label>
-                        <input asp-for="Input.Email" class="form-control rounded-input" autocomplete="username"
-                            aria-required="true" required />
+                                <input asp-for="Input.Email" class="form-control form-control-lg" autocomplete="username"
+                               aria-required="true" required />
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
 
-                    <div class="mb-5 col-xs-4 rounded form-control-lg">
+                    <div class="mb-3">
                         <label asp-for="Input.Password" class="form-label">Password</label>
-                        <input asp-for="Input.Password" type="password" class="form-control rounded-input"
-                            autocomplete="current-password" aria-required="true" required />
+                                <input asp-for="Input.Password" type="password" class="form-control form-control-lg"
+                               autocomplete="current-password" aria-required="true" required />
                         <span asp-validation-for="Input.Password" class="text-danger"></span>
                     </div>
 
@@ -104,7 +79,7 @@
 
                     <div class="mb-3 text-center">
                         <button type="button" class="btn btn-dark btn-lg rounded-button"
-                            onclick="location.href='./Register'">
+                                onclick="location.href='./Register'">
                             Create a new account
                         </button>
                     </div>
@@ -112,10 +87,10 @@
             </div>
         </div>
     </div>
+</div>
+    </div>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
 </body>
 
 </html>
