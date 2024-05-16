@@ -30,7 +30,7 @@
 </head>
 <body class="bg-light">
     <span id=skew-bg></span>
-    <div class="container d-flex align-items-center min-vh-100">
+    <div class="container d-flex align-items-center min-vh-90">
         <div class="row justify-content-center w-100">
             <div class="col-12 col-md-9 col-lg-7 col-xl-6">
                 <div class="card rounded-4">
@@ -46,12 +46,12 @@
                         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
                             <div class="mb-3">
                                 <label for="Input_Firstname" class="form-label">Your firstname</label>
-                                <input asp-for="Input.Firstname" id="Input_Firstname" class="form-control form-control-lg" autocomplete="username"  aria-required="true" />
+                                <input asp-for="Input.Firstname" id="Input_Firstname" class="form-control form-control-lg"   aria-required="true" />
                                 <span asp-validation-for="Input.Firstname" class="text-danger"></span>
                             </div>
                             <div class="mb-3">
                                 <label for="Input_Email" class="form-label">Your lastname</label>
-                                <input asp-for="Input.Lastname" id="Input_Lastname" class="form-control form-control-lg" autocomplete="username"  aria-required="true" />
+                                <input asp-for="Input.Lastname" id="Input_Lastname" class="form-control form-control-lg"   aria-required="true" />
                                 <span asp-validation-for="Input.Lastname" class="text-danger"></span>
                             </div>
                             <div class="mb-3">

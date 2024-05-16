@@ -8,21 +8,39 @@
         Layout = "/Areas/Identity/Pages/_Layout.cshtml";
     }
 }
+<link rel="stylesheet" href="css/site.css" />
+<span class="d-flex" id="skew-bg"> </span>
 
-<h1>Manage your account</h1>
+<div class="container d-flex justify-content-center">
+    <div class="row justify-content-center w-60">
+        <div class="col-md-12">
+            <div class="card rounded-4">
+                <div class="card-body p-5 bg-transparent">
+                    <h1 class="display-3" style="font-weight: 900">
+                        Manage your account!
+                        <small class="mb-4 display-5" style="font-weight: 500">
+                            <br>
+                        </small>
+                    </h1>
 
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
-    <div class="row">
-        <div class="col-md-3">
-            <partial name="_ManageNav" />
-        </div>
-        <div class="col-md-9">
-            @RenderBody()
+                    <div>
+                        <h2>Change your account settings</h2>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <partial name="_ManageNav" />
+                            </div>
+                            <div class="col-lg-8">
+                                @RenderBody()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 
 @section Scripts {
     @RenderSection("Scripts", required: false)

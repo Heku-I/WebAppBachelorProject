@@ -39,13 +39,19 @@
                 <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
                 <!--------- SEARCH BAR ---------->
                 <form asp-action="Index" method="get">
-                    <div class="form-actions no-color">
-                        <p>
-                            Search by description: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
-                            <input type="submit" value="Search" class="btn btn-default" /> |
+                    <div class=" row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                            <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" class=" form-control form-control-lg rounded-3" placeholder="Search by description:" />
+                            <button type="submit" value="Search" id="Search" class="btn btn-dark">Search</button>/> 
+                            
+                            </div>
+                            
                             <a asp-action="Index">Back to Full List</a>
-                        </p>
+                        </div>
+                           
                     </div>
+                
                 </form>
 
 
@@ -59,25 +65,43 @@
             <!-----BOOTSTRAP https://getbootstrap.com/docs/5.3/components/placeholders/ ------>
                 @if (Model != null && Model.Any())
                 {
-                    <div class="row">
-                        @foreach (var upload in Model)
+                    <div class="container">
+                        @{
+                        var modelCount = Model.Count();
+
+                        for (var i = 0; i < modelCount; i += 3)
                         {
-                            <div class="col-lg-4">
-                                <div class="card" aria-hidden="true">
-                                    <img src="@upload.ImagePath" class="card-img-top" alt="@upload.Description">
-                                    <div class="card-body">
-                                        <p class="card-text">@upload.Description</p>
+                            var chunk = Model.Skip(i).Take(3);
+
+                            <div class="row d-flex justify-content-center">
+                                @foreach (var upload in chunk)
+                                {
+                                    <div class="col-md-2 mb-3 mt-5">
+                                        <div class="card h-100 position-relative d-flex justify-content-center" aria-hidden="true">
+                                            <img src="@upload.ImagePath" class="card-img-top" alt="@upload.Description">
+                                            <div class="card-body">
+                                                <p class="card-text">@upload.Description</p>
+                                            </div>
+                                            <div class="card-footer  ">
+                                                <a class="btn btn-dark" onclick="downloadImage('@upload.ImagePath')">Download image</a>
+                                                <a class="btn btn-dark">Edit description</a>
+                                                <a class="btn btn-danger">Delete image</a>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="card-footer d-flex justify-content-between">
-                                    <a class="btn btn-dark download_btn" onclick="downloadImage('@upload.ImagePath')">Download image</a>
-                                    <a class="btn btn-dark">Edit description</a>
-                                        <a class="btn btn-danger">Delete image</a>
+                                }
+                                @for (var j = chunk.Count(); j < 3; j++)
+                                {
+                                    <div class="col-md-2 mb-3">
+                                        }
                                     </div>
-                                </div>
+                                }
                             </div>
+                                }
+
                         }
-                    </div>
-                }
+                        </div>
+                    }
                 else
                 {
                     <div>
@@ -114,9 +138,8 @@
                 </div>
 
             </section>
-
-        </div>
-
+            
+    </div>
 
         <script>
 
@@ -129,19 +152,10 @@
                 window.location.href = '/Gallery/DownloadImage?imagePath=' + encodeURIComponent(imagePath);
             
             }
-
-
-
-
-
-
-
+            
 
         </script>
-
-
     </body>
 </html>
 
-
-  
+             
