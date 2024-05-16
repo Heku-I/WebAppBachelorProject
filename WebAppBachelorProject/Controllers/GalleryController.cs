@@ -95,6 +95,7 @@ namespace WebAppBachelorProject.Controllers
         {
             if (string.IsNullOrEmpty(imagePath))
             {
+
                 return BadRequest("Image path is not specified.");
             }
 

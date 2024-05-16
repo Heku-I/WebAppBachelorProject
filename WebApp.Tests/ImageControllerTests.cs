@@ -302,7 +302,7 @@ namespace ImageAble.Tests
             //Act
             var result = await _controller.UploadToChatGPT(request, null) as BadRequestObjectResult;
 
-            //Assert
+            //AssertVal
             Assert.IsNotNull(result, "The result should not be null.");
 
 
