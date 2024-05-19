@@ -5,8 +5,8 @@ using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using System.Security.Claims;
 using System.Text;
+using WebAppBachelorProject.DAL.Context;
 using WebAppBachelorProject.DAL.Repositories;
-using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
 using WebAppBachelorProject.Services;
 using ImageSharpImage = SixLabors.ImageSharp.Image;
@@ -24,16 +24,24 @@ namespace WebAppBachelorProject.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IImageProcessingService _imageProcessingService;
+        private readonly IImageService _imageService;
 
 
 
-        public ImageController(ILogger<ImageController> logger, IImageRepository imageRepository, ApplicationDbContext context, IConfiguration configuration, IImageProcessingService imageProcessingService)
+
+        public ImageController(ILogger<ImageController> logger,
+            IImageRepository imageRepository, 
+            ApplicationDbContext context, IConfiguration configuration, 
+            IImageProcessingService imageProcessingService, 
+            IImageService imageService)
         {
             _logger = logger;
             _imageRepository = imageRepository;
             _context = context;
             _configuration = configuration;
             _imageProcessingService = imageProcessingService;
+            _imageService = imageService;
+
 
         }
 
@@ -50,170 +58,114 @@ namespace WebAppBachelorProject.Controllers
         /// If the process is successful, it returns an OK status with the descriptions; otherwise, 
         /// it handles potential errors in image processing or prediction internally.
         /// </returns>
+
         [HttpPost("GetMultipleImages")]
         public async Task<IActionResult> GetMultipleImages([FromBody] ImageUploadRequest request)
         {
-            Console.WriteLine("GetMultipleImages has been called");
+            _logger.LogInformation("ImageController: GetMultipleImages has been called.");
 
-            if (request == null)
+
+            if (request == null || request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
             {
-                Console.WriteLine("Request is null");
-                return BadRequest("Request cannot be null.");
+                return BadRequest("Invalid request.");
             }
 
-            if (request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
-            {
-                Console.WriteLine("ImageBase64Array list is null");
-                return BadRequest("Image list cannot be empty.");
+            var result = await _imageProcessingService.ProcessMultipleImagesAsync(request.ImageBase64Array);
 
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
             }
 
-            List<string> descriptions = new List<string>();
-
-            foreach (string base64String in request.ImageBase64Array)
-            {
-                if (!IsBase64String(base64String))
-                {
-                    Console.WriteLine("The 'base64String' is not a base64String.");
-                    return BadRequest("It is not a base64String");
-
-                }
-
-                //Convert the Base64 string to a byte array
-                byte[] imageBytes = Convert.FromBase64String(base64String);
-
-                //Pass the byte array to service for further processing
-                string description = await _imageProcessingService.SendImageToDocker(imageBytes);
-
-                if (description == null)
-                {
-
-                    Console.WriteLine("Description is null. Please check Service.");
-                    return BadRequest("Description returned as null.");
-
-                }
-
-                descriptions.Add(description);
-            }
-
-            return Ok(new { Descriptions = descriptions });
+            return Ok(new { Descriptions = result.Descriptions });
         }
 
 
 
-        //Need a summary!
+
+        //https://stackoverflow.com/questions/6309379/how-to-check-for-a-valid-base64-encoded-string/54143400#54143400
+        //Checking if it is a base64.
+        public static bool IsBase64String(string base64)
+        {
+            Span<byte> buffer = new Span<byte>(new byte[base64.Length]);
+            return Convert.TryFromBase64String(base64, buffer, out int bytesParsed);
+        }
+
+
 
         [HttpPost("DescFromChatGPT")]
         public async Task<IActionResult> UploadToChatGPT([FromBody] ImageUploadRequest request, [FromHeader] string apiKey)
         {
-
-            Console.WriteLine("UploadToChatGPT has been called");
-
-            if (request == null)
+            if (request == null || request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
             {
-                Console.WriteLine("Request is null");
-                return BadRequest("Request cannot be null.");
+                return BadRequest("Invalid request.");
             }
 
-            if (request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
+            if (string.IsNullOrEmpty(apiKey))
             {
-                Console.WriteLine("ImageBase64Array list is null");
-                return BadRequest("Image list cannot be empty.");
+                return BadRequest("API key is necessary. Please enter an API key.");
             }
 
-            if (apiKey == null)
+            var result = await _imageProcessingService.ProcessImagesWithChatGPTAsync(request.ImageBase64Array, request.Prompt, apiKey);
+
+            if (!result.Success)
             {
-                Console.WriteLine("API-key is necessary");
-                return BadRequest("API-key is necessary. Please enter a API-key");
+                return BadRequest(result.Message);
             }
 
-            var prompt = request.Prompt;
-
-            List<string> descriptions = new List<string>();
-
-
-            foreach (string base64String in request.ImageBase64Array)
-            {
-
-                if (!IsBase64String(base64String))
-                {
-                    Console.WriteLine("The 'base64String' is not a base64String.");
-                    return BadRequest("It is not a base64String");
-
-                }
-
-                byte[] imageBytes = Convert.FromBase64String(base64String);
-
-                string description = await _imageProcessingService.UploadToChatGPT(imageBytes, prompt, apiKey);
-
-                descriptions.Add(description);
-            }
-
-            Console.WriteLine("UploadToChatGPT: Success");
-            return Ok(new { Descriptions = descriptions });
+            return Ok(new { Descriptions = result.Descriptions });
         }
-
 
 
         [HttpPost("Custom")]
         public async Task<IActionResult> CustomModelGenerator([FromBody] ImageUploadRequest request, [FromHeader] string customEndpoint)
         {
-
-            Console.WriteLine("CustomModelGenerator has been called");
-
-            if (request == null)
+            if (request == null || request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
             {
-                Console.WriteLine("Request is null");
-                return BadRequest("Request cannot be null.");
+                return BadRequest("Invalid request.");
             }
 
-            if (request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
+            if (string.IsNullOrEmpty(customEndpoint))
             {
-                Console.WriteLine("ImageBase64Array list is null");
-                return BadRequest("Image list cannot be empty.");
+                return BadRequest("Endpoint URL is necessary. Please enter an Endpoint URL.");
             }
 
-            if (customEndpoint == null)
+            var result = await _imageProcessingService.ProcessImagesWithCustomModelAsync(request.ImageBase64Array, customEndpoint);
+
+            if (!result.Success)
             {
-                Console.WriteLine("Endpoint-URL is necessary");
-                return BadRequest("Endpoint-URL is necessary. Please enter a Endpoint URL");
+                return BadRequest(result.Message);
             }
 
-
-            List<string> descriptions = new List<string>();
-
-            foreach (string base64String in request.ImageBase64Array)
-            {
-                if (!IsBase64String(base64String))
-                {
-                    Console.WriteLine("The 'base64String' is not a base64String.");
-                    return BadRequest("It is not a base64String");
-
-                }
-
-                //Convert the Base64 string to a byte array
-                byte[] imageBytes = Convert.FromBase64String(base64String);
-
-                //Pass the byte array to service for further processing
-                string description = await _imageProcessingService.UploadToCustomModel(imageBytes, customEndpoint);
-
-                if (description == null)
-                {
-
-                    Console.WriteLine("Description is null. Please check Service.");
-                    return BadRequest("Description returned as null.");
-
-                }
-
-                descriptions.Add(description);
-            }
-
-            return Ok(new { Descriptions = descriptions });
+            return Ok(new { Descriptions = result.Descriptions });
         }
 
 
 
 
+        /*
+         * 
+         * New ones
+         */
+
+
+        [HttpPost("GetEval")]
+        public async Task<IActionResult> GetEvaluation([FromBody] EvaluationRequest request)
+        {
+            _logger.LogInformation("ImageController: GetEvaluation has been called.");
+            return await _imageProcessingService.GetEvaluation(request);
+        }
+
+
+
+
+
+
+
+
+        /*
+         * 
+         * OLD ONES
 
         /// <summary>
         /// Receives an evaluation request and processes it to return predictions. This method logs the incoming request,
@@ -233,12 +185,6 @@ namespace WebAppBachelorProject.Controllers
 
                 if (predictions != null)
                 {
-                    _logger.LogInformation("Predictions:");
-                    foreach (var prediction in predictions)
-                    {
-                        _logger.LogInformation($"{string.Join(",", prediction)}"); // Log each prediction as a comma-separated string
-                    }
-
                     // Return predictions to the client in a structured format
                     return Ok(predictions.SelectMany(p => p).ToList());
                 }
@@ -253,6 +199,8 @@ namespace WebAppBachelorProject.Controllers
                 return BadRequest("Invalid request payload.");
             }
         }
+
+
 
         /// <summary>
         /// Sends a list of descriptions to a Docker-hosted prediction service and retrieves the predictions.
@@ -283,7 +231,6 @@ namespace WebAppBachelorProject.Controllers
                         if (response.IsSuccessStatusCode)
                         {
                             var responseContent = await response.Content.ReadAsStringAsync();
-                            _logger.LogInformation($"Response for description '{desc}': {responseContent}");
 
                             var responseData = JsonConvert.DeserializeObject<JObject>(responseContent);
                             if (responseData?["predictions"] != null)
@@ -308,7 +255,131 @@ namespace WebAppBachelorProject.Controllers
         }
 
 
+        */
 
+
+
+
+
+        /*NEW ONES:
+        */
+
+        [HttpPost("SaveImage")]
+        public async Task<IActionResult> SaveImageToFolder(
+            [FromForm(Name = "imageFiles")] List<IFormFile> imageFiles,
+            [FromForm(Name = "descriptions")] List<string> descriptions,
+            [FromForm(Name = "evaluations")] List<string> evaluations)
+        {
+            _logger.LogInformation("ImageController: SaveImageToFolder has been called.");
+
+            for (int i = 0; i < imageFiles.Count; i++)
+            {
+                try
+                {
+                    await _imageService.SaveImageToFolderAsync(imageFiles[i], descriptions[i], evaluations[i], i);
+                    await SaveImageToDB(descriptions[i], imageFiles[i].FileName, evaluations[i]);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"An error occurred while processing image {imageFiles[i].FileName}: {ex.Message}");
+                    return StatusCode(500, $"An error occurred while processing the image: {ex.Message}");
+                }
+            }
+
+            return Ok(new { message = "All images have been successfully saved and processed." });
+        }
+
+
+
+
+
+
+
+
+        private async Task<IActionResult> SaveImageToDB(string description, string fileName, string evaluation)
+        {
+            _logger.LogInformation("ImageController: SaveImageToDB is reached.");
+
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return BadRequest(new { Success = false, Message = "Invalid image data, path is missing." });
+            }
+
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation($"The save has been requested by user ID {userId}");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogError("The userId is null or empty.");
+                return Forbid();
+            }
+
+            string relativePath = $"/Uploads/{fileName}";
+            var dateCreated = DateTime.Today;
+
+            Models.Image image = new Models.Image
+            {
+                Description = description,
+                ImagePath = relativePath,
+                UserId = userId,
+                DateCreated = dateCreated,
+                Evaluation = evaluation
+            };
+
+            _logger.LogInformation($"The description of the image is: {image.Description}");
+            _logger.LogInformation($"The path of the image is: {image.ImagePath}");
+
+            if (!TryValidateModel(image))
+            {
+                _logger.LogError("ModelState is invalid");
+                var response = new { Success = false, Message = "Model state is invalid", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) };
+                return BadRequest(response);
+            }
+
+            try
+            {
+                bool result = await _imageService.SaveImageToDBAsync(image);
+
+                if (result)
+                {
+                    _logger.LogInformation($"Saved image to database.\n" +
+                        $"ImageId: {image.ImageId}\n" +
+                        $"Description: {image.Description}\n" +
+                        $"ImagePath:{image.ImagePath}\n" +
+                        $"DateCreated:{image.DateCreated}\n" +
+                        $"User: {image.UserId}");
+
+                    var response = new { Success = true, Message = "Image created successfully" };
+                    return Ok(response);
+                }
+                else
+                {
+                    var response = new { Success = false, Message = "Failure to save the record to the DB." };
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating the image.");
+                return StatusCode(500, new { Success = false, Message = ex.Message });
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+        /*
+         * 
+         * 
+         * 
+         * 
+         * OLD ONES
 
         //PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions
         //USING IMAGESHARP - DOCUMENTATION https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Exif.html
@@ -321,6 +392,7 @@ namespace WebAppBachelorProject.Controllers
         /// <param name="description">A text description that is added to the image's EXIF profile under the ImageDescription tag.</param>
         /// <param name="evaluation">An evaluation or comment that is added to the image's EXIF profile under the UserComment tag.</param>
         /// <returns>An ImageSharpImage with modified EXIF metadata, which can then be saved, downloaded, or further processed.</returns>
+        
         private ImageSharpImage AddMetadataToImage(IFormFile imageFile, string description, string evaluation)
         {
             _logger.LogInformation("ImageController: AddMetadataToImage has been called.");
@@ -343,8 +415,7 @@ namespace WebAppBachelorProject.Controllers
 
             return image;
         }
-
-
+       
 
         /// <summary>
         /// Asynchronously saves a list of images to the server folder.
@@ -354,6 +425,7 @@ namespace WebAppBachelorProject.Controllers
         /// <param name="descriptions">Descriptions for each image file. Passed as form data named "descriptions"</param>
         /// <param name="evaluations">Evaluations for each description. Passed as form data named "evaluations"</param>
         /// <returns>indication of success or failure of the image saving process.</returns>
+        
         [Authorize]
         [HttpPost("SaveImage")]
         public async Task<IActionResult> SaveImageToFolder(
@@ -524,7 +596,7 @@ namespace WebAppBachelorProject.Controllers
             }
         }
 
-
+        */
 
 
 
@@ -567,7 +639,7 @@ namespace WebAppBachelorProject.Controllers
                 imageStream.Position = 0;  // Reset the stream position after detecting the format
 
                 // Use the existing function to add metadata to the image
-                using var image = AddMetadataToImage(imageFile, description, evaluation);
+                using var image = _imageService.AddMetadataToImage(imageFile, description, evaluation);
                 var memoryStream = new MemoryStream();
 
                 image.Save(memoryStream, format);  // Save the image with metadata to memory stream
@@ -581,14 +653,6 @@ namespace WebAppBachelorProject.Controllers
                 _logger.LogError($"Error while processing image download: {ex.Message}");
                 return StatusCode(500, "Error processing your download.");
             }
-        }
-
-        //https://stackoverflow.com/questions/6309379/how-to-check-for-a-valid-base64-encoded-string/54143400#54143400
-        //Checking if it is a base64.
-        public static bool IsBase64String(string base64)
-        {
-            Span<byte> buffer = new Span<byte>(new byte[base64.Length]);
-            return Convert.TryFromBase64String(base64, buffer, out int bytesParsed);
         }
 
 

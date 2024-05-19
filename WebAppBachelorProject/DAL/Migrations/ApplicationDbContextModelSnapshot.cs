@@ -2,9 +2,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WebAppBachelorProject.Data;
+using WebAppBachelorProject.DAL.Context;
 
 
 #nullable disable
@@ -12,10 +11,9 @@ using WebAppBachelorProject.Data;
 namespace WebAppBachelorProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240219132605_AppUser")]
-    partial class AppUser
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.27");
@@ -228,13 +226,21 @@ namespace WebAppBachelorProject.Migrations
             modelBuilder.Entity("WebAppBachelorProject.Models.Image", b =>
                 {
                     b.Property<string>("ImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateCreated")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("Evaluation")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

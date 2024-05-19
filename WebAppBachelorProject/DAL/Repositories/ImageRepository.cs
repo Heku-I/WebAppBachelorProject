@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebAppBachelorProject.Data;
+using WebAppBachelorProject.DAL.Context;
 using ImageModel = WebAppBachelorProject.Models.Image;
 
 namespace WebAppBachelorProject.DAL.Repositories

@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using OpenAI_API.Images;
 using WebAppBachelorProject.Controllers;
+using WebAppBachelorProject.DAL.Context;
 using WebAppBachelorProject.DAL.Repositories;
-using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Models;
 using WebAppBachelorProject.Services;
 

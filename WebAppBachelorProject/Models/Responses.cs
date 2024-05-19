@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace WebAppBachelorProject.Controllers
+namespace WebAppBachelorProject.Models
 {
     public class Responses
     {

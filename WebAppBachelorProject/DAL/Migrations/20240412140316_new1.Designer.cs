@@ -4,15 +4,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WebAppBachelorProject.Data;
+using WebAppBachelorProject.DAL.Context;
+
 
 #nullable disable
 
 namespace WebAppBachelorProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240504093503_dateCreated")]
-    partial class dateCreated
+    [Migration("20240412140316_new1")]
+    partial class new1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -227,10 +228,6 @@ namespace WebAppBachelorProject.Migrations
             modelBuilder.Entity("WebAppBachelorProject.Models.Image", b =>
                 {
                     b.Property<string>("ImageId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("DateCreated")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")

@@ -332,14 +332,14 @@
 
                 /*
                 ----------------------- PREVIEW IMAGE -----------------------
-                Description:
-                    Generates a dynamic preview of image files selected via `file_Input` in a specified table
-                    (`previewTable`). First, it clears any existing content in the table and sets up headers
-                    for 'Image', 'Description', 'Evaluation', and 'Button'. Each image file is read and displayed
-                    in a new table row with placeholders for further descriptions and controls.
+                    Description:
+                        Generates a dynamic preview of image files selected via `file_Input` in a specified table
+                        (`previewTable`). First, it clears any existing content in the table and sets up headers
+                        for 'Image', 'Description', 'Evaluation', and 'Button'. Each image file is read and displayed
+                        in a new table row with placeholders for further descriptions and controls.
 
-                    Sources:
-                    https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/insertRow - For inserting table rows
+                        Sources:
+                        https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/insertRow - For inserting table rows
 
                  */
 
@@ -490,13 +490,13 @@
 
                 /*
                 ----------------------- DISPLAY DESCRIPTION -----------------------
-                Description:
-                    Updates an HTML table (`previewTable`) by populating it with descriptions provided in the
-                    `description` array. The function iterates over the array, placing each description into
-                    successive table rows, starting from the second row to skip the header. 
+                    Description:
+                        Updates an HTML table (`previewTable`) by populating it with descriptions provided in the
+                        `description` array. The function iterates over the array, placing each description into
+                        successive table rows, starting from the second row to skip the header. 
 
-                    Source:
-                    https://www.tutorialspoint.com/How-to-add-rows-to-a-table-using-JavaScript-DOM
+                        Source:
+                        https://www.tutorialspoint.com/How-to-add-rows-to-a-table-using-JavaScript-DOM
                 */
 
                 function displayDescription(description) {
@@ -517,10 +517,10 @@
 
                 /*
                  ----------------------- SAVE ALL IMAGES TO GALLERY/DATABASE/FOLDER -----------------------
-                Description:
-                    Gets image files, descriptions, and evaluations from a table (`previewTable`) and an input
-                    (`file_Input`), constructs a FormData object, and sends it to a server endpoint via POST. Each
-                    file and its corresponding metadata are logged before sending. 
+                    Description:
+                        Gets image files, descriptions, and evaluations from a table (`previewTable`) and an input
+                        (`file_Input`), constructs a FormData object, and sends it to a server endpoint via POST. Each
+                        file and its corresponding metadata are logged before sending. 
                 */
 
                 function saveAllImagesToGallery() {
@@ -573,11 +573,11 @@
 
                 /*
                 ----------------------- GENERATE EVALUATION -----------------------
-                Description:
-                    Collects descriptions from (`previewTable`) and sends them as a JSON payload to a server endpoint for processing. 
+                    Description:
+                        Collects descriptions from (`previewTable`) and sends them as a JSON payload to a server endpoint for processing. 
                     
-                    On receiving the response, it checks the validity of the data and calls `displayEvaluation` to update the UI
-                    with received data. This function also handles errors by logging them to the console.n
+                        On receiving the response, it checks the validity of the data and calls `displayEvaluation` to update the UI
+                        with received data. This function also handles errors by logging them to the console.n
                 */
 
                 function generateEvaluation() {
@@ -606,8 +606,6 @@
                             .then(response => response.json())
 
                             .then(data => {
-                                console.log('Received data:', data); // Log the entire data object (SHOULD BE REMOVED.)
-
                                 if (data && data.length > 0) {
                                     displayEvaluation(data);
 
@@ -627,13 +625,13 @@
 
                 /*
                 ----------------------- STRIP HTML -----------------------
-                Description:
-                    Removes all HTML tags from a given string. This function takes a string containing HTML
-                    and returns a new string with all HTML tags stripped using a regular expression, leaving
-                    only plain text.
+                    Description:
+                        Removes all HTML tags from a given string. This function takes a string containing HTML
+                        and returns a new string with all HTML tags stripped using a regular expression, leaving
+                        only plain text.
 
-                    Sources:
-                    https://stackoverflow.com/questions/822452/strip-html-tags-from-text-using-plain-javascript
+                        Sources:
+                        https://stackoverflow.com/questions/822452/strip-html-tags-from-text-using-plain-javascript
 
                 */
 

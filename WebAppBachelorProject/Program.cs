@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using WebAppBachelorProject.Areas.Identity.Data;
+using WebAppBachelorProject.DAL.Context;
 using WebAppBachelorProject.DAL.Repositories;
-using WebAppBachelorProject.Data;
 using WebAppBachelorProject.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +35,11 @@ builder.Services.AddTransient<IImageProcessingService, ImageProcessingService>()
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IImageRepository, ImageRepository>();
+builder.Services.AddScoped<IExternalApiService, ExternalApiService>();
+builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddHttpClient();
+
+
 
 
 

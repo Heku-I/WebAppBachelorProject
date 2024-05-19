@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using WebAppBachelorProject.Areas.Identity.Data;
 using ImageModel = WebAppBachelorProject.Models.Image;
 
-namespace WebAppBachelorProject.Data
+namespace WebAppBachelorProject.DAL.Context
 {
     public class ApplicationDbContext : IdentityDbContext<WebAppBachelorProjectUser>
     {
@@ -21,7 +21,7 @@ namespace WebAppBachelorProject.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder); 
+            base.OnModelCreating(modelBuilder);
             modelBuilder.Ignore<Models.ImageDTO>();
         }
 

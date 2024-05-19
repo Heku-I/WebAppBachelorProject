@@ -12,170 +12,190 @@ namespace WebAppBachelorProject.Services
     {
         private readonly ILogger<ImageProcessingService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IExternalApiService _externalApiService;
 
-        public ImageProcessingService(ILogger<ImageProcessingService> logger, IConfiguration configuration)
+
+        public ImageProcessingService(ILogger<ImageProcessingService> logger, IConfiguration configuration, IExternalApiService externalApiService)
         {
             _logger = logger;
             _configuration = configuration;
-
+            _externalApiService = externalApiService;
         }
+
+
+        //https://stackoverflow.com/questions/6309379/how-to-check-for-a-valid-base64-encoded-string/54143400#54143400
+        //Checking if it is a base64.
+        private bool IsBase64String(string base64)
+        {
+            Span<byte> buffer = new Span<byte>(new byte[base64.Length]);
+            return Convert.TryFromBase64String(base64, buffer, out int _);
+        }
+
+
+
+        public class ImageProcessingResult
+        {
+            public bool Success { get; set; }
+            public string Message { get; set; }
+            public List<string> Descriptions { get; set; }
+        }
+
 
 
         //Reference: https://stackoverflow.com/questions/50670553/posting-base64-converted-image-data
         //MultipartFormDataContent //Finn sources!
-        /// <summary>
-        /// Sends an image to a Docker-hosted service for processing and attempts to retrieve a generated caption from the response.
-        /// This method utilizes a new HttpClient instance to send the image bytes as multipart/form-data to the specified endpoint.
-        /// </summary>
-        /// <param name="imageBytes">The byte array of the image to be sent for processing.</param>
-        /// <returns>A task representing the asynchronous operation, which will return a string containing the caption of the image
-        /// if the operation is successful. If the server response is not successful, it returns an error message.</returns>
-        public async Task<string> SendImageToDocker(byte[] imageBytes)
+        public async Task<ImageProcessingResult> ProcessMultipleImagesAsync(List<string> imageBase64Array)
         {
-            _logger.LogInformation("SERVICE: SendImageToDocker has been called.");
+            _logger.LogInformation("ImageProcessingService: ProcessMultipleImagesAsync has been called.");
 
-            using (var client = new HttpClient())
+            var result = new ImageProcessingResult { Success = true, Descriptions = new List<string>() };
+
+            foreach (var base64String in imageBase64Array)
             {
-                using (var content = new MultipartFormDataContent())
+                if (!IsBase64String(base64String))
                 {
-                    //Create ByteArrayContent from image bytes, and add to form data content
-                    var imageContent = new ByteArrayContent(imageBytes);
-                    imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-                    content.Add(imageContent, "image", "upload.jpg");
+                    result.Success = false;
+                    result.Message = "One or more strings are not valid Base64.";
+                    return result;
+                }
 
-                    var response = await client.PostAsync("http://imageable.hrf7gefrewh3e0f2.northeurope.azurecontainer.io:5000/predict", content);
-                    if (response.IsSuccessStatusCode)
+                try
+                {
+                    byte[] imageBytes = Convert.FromBase64String(base64String);
+                    string description = await _externalApiService.SendImageToDockerAsync(imageBytes);
+
+                    if (description == null)
                     {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        _logger.LogInformation($"Response: {responseContent}");
-                        return JsonConvert.DeserializeObject<dynamic>(responseContent).caption;
+                        result.Success = false;
+                        result.Message = "Failed to get description from Docker service.";
+                        return result;
                     }
-                    else
-                    {
-                        _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
-                        return "Error: Could not get a description";
-                    }
+
+                    result.Descriptions.Add(description);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing image");
+                    result.Success = false;
+                    result.Message = $"Error processing images: {ex.Message}";
+                    return result;
                 }
             }
+
+            return result;
         }
 
 
 
-        //https://github.com/OkGoDoIt/OpenAI-API-dotnet?tab=readme-ov-file
-        //https://platform.openai.com/docs/guides/vision
-        public async Task<string> UploadToChatGPT(byte[] imageBytes, string prompt, string apiKey)
+        public async Task<ImageProcessingResult> ProcessImagesWithChatGPTAsync(List<string> imageBase64Array, string prompt, string apiKey)
         {
-            _logger.LogInformation("SERVICE: UploadToChatGPT has been called.");
+            var result = new ImageProcessingResult { Success = true, Descriptions = new List<string>() };
 
-            try
+            foreach (var base64String in imageBase64Array)
             {
-                OpenAIAPI api = new OpenAIAPI(apiKey);
-
-                var defaultPrompt = "Create a description for the following image.";
-                var promptToSend = string.IsNullOrEmpty(prompt) ? defaultPrompt : prompt;
-
-                _logger.LogInformation($"SERVICE: Using prompt: {promptToSend}");
-
-                var result = await api.Chat.CreateChatCompletionAsync(promptToSend, ImageInput.FromImageBytes(imageBytes));
-
-                if (result == null)
+                if (!IsBase64String(base64String))
                 {
-                    _logger.LogError("SERVICE: OpenAI API returned null result.");
-                    return null;
+                    result.Success = false;
+                    result.Message = "One or more strings are not valid Base64.";
+                    return result;
                 }
 
-                var description = result.ToString();
-                _logger.LogInformation($"SERVICE: Received description: {description}");
+                try
+                {
+                    byte[] imageBytes = Convert.FromBase64String(base64String);
+                    string description = await _externalApiService.UploadToChatGPTAsync(imageBytes, prompt, apiKey);
 
-                return description;
+                    if (description == null)
+                    {
+                        result.Success = false;
+                        result.Message = "Failed to get description from ChatGPT.";
+                        return result;
+                    }
+
+                    result.Descriptions.Add(description);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing image with ChatGPT");
+                    result.Success = false;
+                    result.Message = $"Error processing images with ChatGPT: {ex.Message}";
+                    return result;
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "SERVICE: Exception occurred in UploadToChatGPT.");
-                return null;
-            }
+
+            return result;
         }
 
 
 
-
-
-        public async Task<string> UploadToCustomModel(byte[] imageBytes, string apicustomEndpoint)
+        public async Task<ImageProcessingResult> ProcessImagesWithCustomModelAsync(List<string> imageBase64Array, string customEndpoint)
         {
+            var result = new ImageProcessingResult { Success = true, Descriptions = new List<string>() };
 
-            _logger.LogInformation("SERVICE: UploadToCustomModel has been called.");
-
-
-            using (var client = new HttpClient())
+            foreach (var base64String in imageBase64Array)
             {
-                using (var content = new MultipartFormDataContent())
+                if (!IsBase64String(base64String))
                 {
-                    //Create ByteArrayContent from image bytes, and add to form data content
-                    var imageContent = new ByteArrayContent(imageBytes);
+                    result.Success = false;
+                    result.Message = "One or more strings are not valid Base64.";
+                    return result;
+                }
 
-                    imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-                    content.Add(imageContent, "image", "upload.jpg");
+                try
+                {
+                    byte[] imageBytes = Convert.FromBase64String(base64String);
+                    string description = await _externalApiService.UploadToCustomModelAsync(imageBytes, customEndpoint);
 
-                    var response = await client.PostAsync(apicustomEndpoint, content);
-                    if (response.IsSuccessStatusCode)
+                    if (description == null)
                     {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        _logger.LogInformation($"Response: {responseContent}");
-                        return JsonConvert.DeserializeObject<dynamic>(responseContent).caption;
+                        result.Success = false;
+                        result.Message = "Failed to get description from custom model.";
+                        return result;
                     }
-                    else
-                    {
-                        _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
-                        return "Error: Could not get a description";
-                    }
+
+                    result.Descriptions.Add(description);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing image with custom model");
+                    result.Success = false;
+                    result.Message = $"Error processing images with custom model: {ex.Message}";
+                    return result;
                 }
             }
+
+            return result;
         }
 
 
 
-
-
-
-        /* MAYBE REMOVE. 
-
-public async Task<List<string>> SendImagesToDockerMultiple(List<byte[]> imageBytesList)
-{
-    _logger.LogInformation("SendImagesToDocker has been called.");
-
-    List<string> descriptions = new List<string>();
-
-    foreach (var imageBytes in imageBytesList)
-    {
-        using (var client = new HttpClient())
+        public async Task<IActionResult> GetEvaluation(EvaluationRequest request)
         {
-            using (var content = new MultipartFormDataContent())
-            {
-                // Create ByteArrayContent from image bytes, and add to form data content
-                var imageContent = new ByteArrayContent(imageBytes);
-                imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-                content.Add(imageContent, "image", "upload.jpg");
+            _logger.LogInformation("ImageProcessingService: GetEvaluation has been called.");
 
-                var response = await client.PostAsync("http://localhost:5000/predict", content);
-                if (response.IsSuccessStatusCode)
+            if (request != null && request.description != null && request.description.Any())
+            {
+                var predictions = await _externalApiService.SendDescToDocker(request.description);
+
+                if (predictions != null)
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogInformation($"Response: {responseContent}");
-                    descriptions.Add(JsonConvert.DeserializeObject<dynamic>(responseContent).caption);
+                    // Return predictions to the client in a structured format
+                    return new OkObjectResult(predictions.SelectMany(p => p).ToList());
                 }
                 else
                 {
-                    _logger.LogError($"Failed to get a response, status code: {response.StatusCode}");
-                    descriptions.Add("Error: Could not get a description");
+                    _logger.LogError("Predictions are null or empty.");
+                    return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
             }
+            else
+            {
+                return new BadRequestObjectResult("Invalid request payload.");
+            }
         }
-    }
 
-    return descriptions;
-}
 
-*/
+
 
 
 

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WebAppBachelorProject.Data;
+using WebAppBachelorProject.DAL.Context;
 
 
 #nullable disable
@@ -12,8 +12,8 @@ using WebAppBachelorProject.Data;
 namespace WebAppBachelorProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240219125507_CustomUser")]
-    partial class CustomUser
+    [Migration("20240511113102_updt")]
+    partial class updt
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -152,7 +152,7 @@ namespace WebAppBachelorProject.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("WebAppBachelorProject.Models.ApplicationUser", b =>
+            modelBuilder.Entity("WebAppBachelorProject.Areas.Identity.Data.WebAppBachelorProjectUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -209,10 +209,6 @@ namespace WebAppBachelorProject.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -232,13 +228,21 @@ namespace WebAppBachelorProject.Migrations
             modelBuilder.Entity("WebAppBachelorProject.Models.Image", b =>
                 {
                     b.Property<string>("ImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateCreated")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("Evaluation")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -264,7 +268,7 @@ namespace WebAppBachelorProject.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("WebAppBachelorProject.Models.ApplicationUser", null)
+                    b.HasOne("WebAppBachelorProject.Areas.Identity.Data.WebAppBachelorProjectUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -273,7 +277,7 @@ namespace WebAppBachelorProject.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("WebAppBachelorProject.Models.ApplicationUser", null)
+                    b.HasOne("WebAppBachelorProject.Areas.Identity.Data.WebAppBachelorProjectUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -288,7 +292,7 @@ namespace WebAppBachelorProject.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebAppBachelorProject.Models.ApplicationUser", null)
+                    b.HasOne("WebAppBachelorProject.Areas.Identity.Data.WebAppBachelorProjectUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -297,7 +301,7 @@ namespace WebAppBachelorProject.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("WebAppBachelorProject.Models.ApplicationUser", null)
+                    b.HasOne("WebAppBachelorProject.Areas.Identity.Data.WebAppBachelorProjectUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -306,7 +310,7 @@ namespace WebAppBachelorProject.Migrations
 
             modelBuilder.Entity("WebAppBachelorProject.Models.Image", b =>
                 {
-                    b.HasOne("WebAppBachelorProject.Models.ApplicationUser", "User")
+                    b.HasOne("WebAppBachelorProject.Areas.Identity.Data.WebAppBachelorProjectUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

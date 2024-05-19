@@ -4,15 +4,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WebAppBachelorProject.Data;
+using WebAppBachelorProject.DAL.Context;
+
 
 #nullable disable
 
 namespace WebAppBachelorProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240511113102_updt")]
-    partial class updt
+    [Migration("20240504093503_dateCreated")]
+    partial class dateCreated
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -230,14 +231,10 @@ namespace WebAppBachelorProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("DateCreated")
+                    b.Property<DateOnly>("DateCreated")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Evaluation")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
