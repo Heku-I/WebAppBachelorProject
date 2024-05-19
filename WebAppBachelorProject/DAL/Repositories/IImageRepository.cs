@@ -22,5 +22,7 @@ namespace WebAppBachelorProject.DAL.Repositories
 
         Task UpdateImageAsync(ImageModel image);
 
+        Task DeleteImageAsync(ImageModel image);
+
     }
 }

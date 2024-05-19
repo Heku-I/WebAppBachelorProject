@@ -171,6 +171,26 @@ namespace WebAppBachelorProject.Services
         }
 
 
+        public async Task DeleteImageAsync(string imageId)
+        {
+            _logger.LogInformation("ImageService: DeleteImageAsync is reached.");
+
+            var image = await _imageRepository.GetByIdAsync(imageId);
+
+            if (image != null)
+            {
+                await _imageRepository.DeleteImageAsync(image);
+                _logger.LogInformation("ImageService: Image deleted from DB successfully.");
+
+
+
+
+            }
+            else
+            {
+                _logger.LogWarning("ImageService: Image not found.");
+            }
+        }
 
 
 

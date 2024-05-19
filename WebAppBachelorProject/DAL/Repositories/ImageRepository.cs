@@ -136,7 +136,13 @@ namespace WebAppBachelorProject.DAL.Repositories
 
 
 
-
+        public async Task DeleteImageAsync(ImageModel image)
+        {
+            _logger.LogInformation($"ImageRepository: Deleting image {image.ImageId}");
+            _context.Images.Remove(image);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation($"ImageRepository: Image {image.ImageId} deleted from database");
+        }
 
 
 

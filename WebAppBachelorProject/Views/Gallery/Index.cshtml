@@ -33,7 +33,7 @@
 
 
 
-        <div class="container mt-5">
+    <div class="container mt-5">
             <section id="search-section" class="text-center mt-5" style="margin-top:20px;">
 
                 <!--https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/sort-filter-page?view=aspnetcore-6.0-->
@@ -62,7 +62,7 @@
 
 
 
-            <!-----BOOTSTRAP https://getbootstrap.com/docs/5.3/components/placeholders/ ------>
+                <!-----BOOTSTRAP https://getbootstrap.com/docs/5.3/components/placeholders/ ------>
                 @if (Model != null && Model.Any())
                 {
                     <div class="container">
@@ -82,19 +82,24 @@
                                             <div class="card-body">
                                                 <p id="uploadDesc"class="card-text">@upload.Description</p>
                                             </div>
-                                            <div class="card-footer  ">
-                                                <a class="btn btn-dark" onclick="downloadImage('@upload.ImagePath')">Download image</a>
+                                            <div class="card-footer">
+                                                <a class="btn btn-dark" onclick="downloadImage('@upload.ImagePath')">Download</a>
+
                                                 <a href="#" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#ChangeDescModal"
-                                                   onclick="loadDescriptionIntoModal('@upload.ImageId', '@upload.Description')">Edit description</a>
-                                                <a class="btn btn-danger">Delete image</a>
-                                            </div>
+                                                   onclick="loadDescriptionIntoModal('@upload.ImageId', '@upload.Description', '@upload.ImagePath')">Edit</a>
+
+                                                <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                                   onclick="loadImage('@upload.ImageId', '@upload.Description','@upload.ImagePath')">Delete Image</a>
+
+
+                                             </div>
                                         </div>
                                     </div>
                                 }
                                 @for (var j = chunk.Count(); j < 3; j++)
                                 {
                                     <div class="col-md-2 mb-3">
-                                        }
+                                        
                                     </div>
                                 }
                             </div>
@@ -140,7 +145,7 @@
 
             </section>
 
-        <!---------MODAL--------->
+        <!---------EDIT MODAL--------->
         <!---- https://getbootstrap.com/docs/5.0/components/modal/------->
 
         <div class="modal fade" id="ChangeDescModal" tabindex="-1" aria-labelledby="ChangeDescModalLabel" aria-hidden="true">
@@ -153,14 +158,42 @@
                         </div>
 
                         <div class="modal-body">
+                            <img id="imageDisplay1" class="img-fluid" src="" />
+                            <hr />
+
                             <h6>Need to tweak the description? You can easily edit it below.</h6>
 
                             <textarea id="descriptionTextarea" name="Description" rows="3" cols="50"></textarea>
-                            <input type="hidden" id="imageIdInput" name="ImageId"  />
+                            <input type="hidden" id="imageIdInput" name="ImageId" readonly/>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!---------DELETE MODAL--------->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form asp-action="DeleteImage" method="post">
+                        <div class="modal-header">
+                            <h5 id="deleteModalLabel">Are you sure you want to delete the selected image?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <img id="imageDisplay2" class="img-fluid" src="" />
+                            <hr />
+                            <p>Description:</p>
+                            <div id="descriptionText"></div>
+                            <input type="hidden" id="imageIdInput2" name="ImageId" readonly />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger confirmDelete">Delete</button>
                         </div>
                     </form>
                 </div>
@@ -173,7 +206,7 @@
         <script>
 
             /*
-            To donwload the image.
+            To download the image.
 
             */
             function downloadImage(imagePath) {
@@ -185,14 +218,38 @@
 
 
             /*
-            ----------------------- LOAD DESCRIPTION INTO MODAL -----------------------
+            ----------------------- LOAD DESCRIPTION INTO EDIT-MODAL -----------------------
             Description of the code:
 
             */
-            function loadDescriptionIntoModal(imageId, description) {
+            function loadDescriptionIntoModal(imageId, description, path) {
                 document.getElementById('descriptionTextarea').value = description;
                 document.getElementById('imageIdInput').value = imageId;
-        }
+
+            var imageDisplay = document.getElementById('imageDisplay1');
+            imageDisplay.src = path;
+            imageDisplay.alt = description; 
+            }
+
+
+
+            /*
+            ----------------------- LOAD DESCRIPTION INTO DELETE-MODAL -----------------------
+            Description of the code:
+
+            */
+            function loadImage(imageId, description, path) {
+
+                document.getElementById('descriptionText').textContent = description;
+                //document.getElementById('evaluationText').textContent = evaluation;
+
+                var imageDisplay = document.getElementById('imageDisplay2');
+                imageDisplay.src = path;
+                imageDisplay.alt = description;
+
+                document.getElementById('imageIdInput2').value = imageId;
+            }
+
 
 
 

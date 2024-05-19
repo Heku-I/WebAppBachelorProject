@@ -179,6 +179,49 @@ namespace WebAppBachelorProject.Controllers
 
 
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteImage(DeleteImageRequest request)
+        {
+            _logger.LogInformation("GalleryController: DeleteImage is reached.");
+
+            if (request == null)
+            {
+                _logger.LogWarning("Empty request received.");
+                return NotFound("Empty request.");
+            }
+
+            var image = await _imageRepository.GetByIdAsync(request.ImageId);
+
+            if (image == null)
+            {
+                _logger.LogWarning($"Image not found: {request.ImageId}");
+                return NotFound("Image not found.");
+            }
+
+            try
+            {
+                await _imageService.DeleteImageAsync(request.ImageId);
+                _logger.LogInformation("GalleryController: Image deleted successfully.");
+                return RedirectToAction("Index"); // Redirect to the appropriate view after deletion
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "An error occurred while deleting the image.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        public class DeleteImageRequest
+        {
+            public string ImageId { get; set; }
+        }
+
+
+
+
+
+
+
 
 
 

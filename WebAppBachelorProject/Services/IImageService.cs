@@ -13,5 +13,7 @@
 
         Task UpdateImgDescAsync(string imageId, string description);
 
+        Task DeleteImageAsync(string imageId);
+
     }
 }
