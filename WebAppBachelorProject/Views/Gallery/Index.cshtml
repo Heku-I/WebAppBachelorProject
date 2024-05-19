@@ -42,8 +42,8 @@
                     <div class=" row justify-content-center">
                         <div class="col-md-6">
                             <div class="input-group">
-                            <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" class=" form-control form-control-lg rounded-3" placeholder="Search by description:" />
-                            <button type="submit" value="Search" id="Search" class="btn btn-dark">Search</button>/> 
+                            <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" class=" form-control form-control-lg rounded-3" placeholder="Search by description" />
+                            <button type="submit" value="Search" id="Search" class="btn btn-dark">Search</button>
                             
                             </div>
                             
@@ -80,11 +80,12 @@
                                         <div class="card h-100 position-relative d-flex justify-content-center" aria-hidden="true">
                                             <img src="@upload.ImagePath" class="card-img-top" alt="@upload.Description">
                                             <div class="card-body">
-                                                <p class="card-text">@upload.Description</p>
+                                                <p id="uploadDesc"class="card-text">@upload.Description</p>
                                             </div>
                                             <div class="card-footer  ">
                                                 <a class="btn btn-dark" onclick="downloadImage('@upload.ImagePath')">Download image</a>
-                                                <a class="btn btn-dark">Edit description</a>
+                                                <a href="#" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#ChangeDescModal"
+                                                   onclick="loadDescriptionIntoModal('@upload.ImageId', '@upload.Description')">Edit description</a>
                                                 <a class="btn btn-danger">Delete image</a>
                                             </div>
                                         </div>
@@ -138,6 +139,34 @@
                 </div>
 
             </section>
+
+        <!---------MODAL--------->
+        <!---- https://getbootstrap.com/docs/5.0/components/modal/------->
+
+        <div class="modal fade" id="ChangeDescModal" tabindex="-1" aria-labelledby="ChangeDescModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form asp-action="UpdateImageDescription" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="ChangeDescModalLabel">Change description</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <h6>Need to tweak the description? You can easily edit it below.</h6>
+
+                            <textarea id="descriptionTextarea" name="Description" rows="3" cols="50"></textarea>
+                            <input type="hidden" id="imageIdInput" name="ImageId"  />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
             
     </div>
 
@@ -152,7 +181,24 @@
                 window.location.href = '/Gallery/DownloadImage?imagePath=' + encodeURIComponent(imagePath);
             
             }
-            
+
+
+
+            /*
+            ----------------------- LOAD DESCRIPTION INTO MODAL -----------------------
+            Description of the code:
+
+            */
+            function loadDescriptionIntoModal(imageId, description) {
+                document.getElementById('descriptionTextarea').value = description;
+                document.getElementById('imageIdInput').value = imageId;
+        }
+
+
+
+
+
+
 
         </script>
     </body>

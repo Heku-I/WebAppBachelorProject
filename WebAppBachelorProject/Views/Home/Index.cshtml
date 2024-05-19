@@ -526,11 +526,11 @@
                 function saveAllImagesToGallery() {
                     var rows = previewTable.rows;
 
-                    //Checking if files are selected
+                    // Checking if files are selected
                     if (file_Input.files.length > 0) {
                         var formToSend = new FormData();
 
-                        //Looping through each file and corresponding table row
+                        // Looping through each file and corresponding table row
                         for (let i = 0; i < file_Input.files.length; i++) {
                             var imageFiles = file_Input.files[i];
                             var descriptions = rows[i + 1].cells[1].innerText; 
@@ -552,23 +552,34 @@
                         fetch('/Image/SaveImage', {
                             method: 'POST',
                             body: formToSend
-
                         })
-                            .then(response => response.text())
-                            .then(text => {
-                                console.log("Response:", text);
-                                return JSON.parse(text);
-                            })
-                            .then(data => {
-                                console.log('Success:', data);
-                            })
-                            .catch(error => {
+                        .then(response => {
+                            //Handling the [Authorization]!
+                                if (response.status === 401 || response.redirected) {
+
+                                //Redirect to login page if unauthorized
+                                window.location.href = '/Identity/Account/Login';
+                                return Promise.reject('Unauthorized');
+                            }
+                            return response.text();
+                        })
+                        .then(text => {
+                            console.log("Response:", text);
+                            return JSON.parse(text);
+                        })
+                        .then(data => {
+                            console.log('Success:', data);
+                        })
+                        .catch(error => {
+                            if (error !== 'Unauthorized') {
                                 console.error('Error:', error);
-                            });
+                            }
+                        });
                     } else {
                         console.error('No files selected or mismatch between files and table rows.');
                     }
                 }
+
 
 
                 /*

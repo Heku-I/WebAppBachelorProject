@@ -4,6 +4,7 @@ using ImageModel = WebAppBachelorProject.Models.Image;
 
 namespace WebAppBachelorProject.DAL.Repositories
 {
+
     public class ImageRepository : IImageRepository
     {
 
@@ -79,7 +80,7 @@ namespace WebAppBachelorProject.DAL.Repositories
         }
 
         //Get an image by it's ID. 
-        public async Task<ImageModel?> GetById(int id)
+        public async Task<ImageModel?> GetById(string id)
         {
 
             var image = await _context.Images.FindAsync(id);
@@ -92,6 +93,23 @@ namespace WebAppBachelorProject.DAL.Repositories
             return image;
 
         }
+
+        public async Task<ImageModel> GetByIdAsync(string imageId)
+        {
+            _logger.LogInformation($"ImageRepository: Fetching image by id {imageId}");
+            return await _context.Images.FindAsync(imageId);
+        }
+
+        public async Task UpdateImageAsync(ImageModel image)
+        {
+            _logger.LogInformation($"ImageRepository: Updating image {image.ImageId}");
+            _context.Images.Update(image);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation($"ImageRepository: Image {image.ImageId} updated in database");
+        }
+
+
+
 
 
         //Update imagepath
@@ -107,18 +125,33 @@ namespace WebAppBachelorProject.DAL.Repositories
             return true;
         }
 
+
+
+
         public IQueryable<ImageModel> GetByUserQueryable(string userId)
         {
             return _context.Images.Where(img => img.UserId == userId);
         }
 
 
-        public Task<IEnumerable<ImageModel>> GetById(string imageId)
+
+
+
+
+
+
+
+
+
+
+
+
+        public Task<bool> UpdateImagePath(string imageId, string path)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> UpdateImagePath(string imageId, string path)
+        Task<IEnumerable<ImageModel>> IImageRepository.GetById(string imageId)
         {
             throw new NotImplementedException();
         }

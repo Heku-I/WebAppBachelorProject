@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
@@ -44,8 +45,6 @@ namespace WebAppBachelorProject.Controllers
 
 
         }
-
-
 
 
         /// <summary>
@@ -263,7 +262,7 @@ namespace WebAppBachelorProject.Controllers
 
         /*NEW ONES:
         */
-
+        [Authorize]
         [HttpPost("SaveImage")]
         public async Task<IActionResult> SaveImageToFolder(
             [FromForm(Name = "imageFiles")] List<IFormFile> imageFiles,
@@ -293,9 +292,7 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-
-
-
+        [Authorize]
         private async Task<IActionResult> SaveImageToDB(string description, string fileName, string evaluation)
         {
             _logger.LogInformation("ImageController: SaveImageToDB is reached.");
@@ -329,32 +326,34 @@ namespace WebAppBachelorProject.Controllers
             _logger.LogInformation($"The description of the image is: {image.Description}");
             _logger.LogInformation($"The path of the image is: {image.ImagePath}");
 
-            if (!TryValidateModel(image))
-            {
-                _logger.LogError("ModelState is invalid");
-                var response = new { Success = false, Message = "Model state is invalid", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) };
-                return BadRequest(response);
-            }
-
             try
             {
-                bool result = await _imageService.SaveImageToDBAsync(image);
-
-                if (result)
+                if (ModelState.IsValid || image != null)
                 {
-                    _logger.LogInformation($"Saved image to database.\n" +
-                        $"ImageId: {image.ImageId}\n" +
-                        $"Description: {image.Description}\n" +
-                        $"ImagePath:{image.ImagePath}\n" +
-                        $"DateCreated:{image.DateCreated}\n" +
-                        $"User: {image.UserId}");
+                    bool result = await _imageService.SaveImageToDBAsync(image);
 
-                    var response = new { Success = true, Message = "Image created successfully" };
-                    return Ok(response);
+                    if (result)
+                    {
+                        _logger.LogInformation($"Saved image to database.\n" +
+                            $"ImageId: {image.ImageId}\n" +
+                            $"Description: {image.Description}\n" +
+                            $"ImagePath:{image.ImagePath}\n" +
+                            $"DateCreated:{image.DateCreated}\n" +
+                            $"User: {image.UserId}");
+
+                        var response = new { Success = true, Message = "Image created successfully" };
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        var response = new { Success = false, Message = "Failure to save the record to the DB." };
+                        return BadRequest(response);
+                    }
                 }
                 else
                 {
-                    var response = new { Success = false, Message = "Failure to save the record to the DB." };
+                    _logger.LogError("ModelState is invalid");
+                    var response = new { Success = false, Message = "Model state is invalid", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) };
                     return BadRequest(response);
                 }
             }
@@ -364,13 +363,6 @@ namespace WebAppBachelorProject.Controllers
                 return StatusCode(500, new { Success = false, Message = ex.Message });
             }
         }
-
-
-
-
-
-
-
 
 
 
@@ -600,6 +592,51 @@ namespace WebAppBachelorProject.Controllers
 
 
 
+
+
+
+
+        [HttpPost("downloadImageWithMetadata")]
+        public async Task<IActionResult> DownloadImageWithMetadata(
+        [FromForm(Name = "imageFile")] IFormFile imageFile,
+        [FromForm(Name = "description")] string description,
+        [FromForm(Name = "evaluation")] string evaluation)
+        {
+            _logger.LogInformation("ImageController: DownloadImageWithMetadata is reached.");
+
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                return BadRequest("No image file provided.");
+            }
+
+            try
+            {
+                var result = await _imageService.DownloadImageWithMetadataAsync(imageFile, description, evaluation);
+                return result;
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError($"Error: {ex.Message}");
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error while processing image download: {ex.Message}");
+                return StatusCode(500, "Error processing your download.");
+            }
+        }
+
+
+
+
+
+
+
+        /*
+         * 
+         * 
+         * 
+         * OLD ONE!!!!!!!!!
         /// <summary>
         /// Processes an uploaded image file by adding metadata the following metadata: description and evaluation of the description. 
         /// and returns the modified image as a downloadable file.
@@ -655,6 +692,21 @@ namespace WebAppBachelorProject.Controllers
             }
         }
 
+        */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -708,5 +760,17 @@ namespace WebAppBachelorProject.Controllers
 
     }
 */
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }

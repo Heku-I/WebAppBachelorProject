@@ -1,6 +1,8 @@
 ﻿using WebAppBachelorProject.DAL.Repositories;
 using ImageSharpImage = SixLabors.ImageSharp.Image;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
+using Microsoft.AspNetCore.Mvc;
+using WebAppBachelorProject.Models;
 
 
 namespace WebAppBachelorProject.Services
@@ -104,5 +106,81 @@ namespace WebAppBachelorProject.Services
         }
 
 
+        //NEW: 
+
+        public async Task<FileContentResult> DownloadImageWithMetadataAsync(IFormFile imageFile, string description, string evaluation)
+        {
+            _logger.LogInformation("ImageProcessingService: DownloadImageWithMetadataAsync is reached.");
+
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                throw new ArgumentException("No image file provided.");
+            }
+
+            try
+            {
+                using var imageStream = imageFile.OpenReadStream();
+                var format = ImageSharpImage.DetectFormat(imageStream);  // Detect the format using the stream
+                if (format == null)
+                {
+                    _logger.LogError("Unsupported image format.");
+                    throw new ArgumentException("Unsupported image format.");
+                }
+
+                imageStream.Position = 0;  // Reset the stream position after detecting the format
+
+                // Use the existing function to add metadata to the image
+                using var image = AddMetadataToImage(imageFile, description, evaluation);
+                var memoryStream = new MemoryStream();
+
+                image.Save(memoryStream, format);  
+                memoryStream.Position = 0; 
+
+                string mimeType = format.DefaultMimeType;  
+                return new FileContentResult(memoryStream.ToArray(), mimeType)
+                {
+                    FileDownloadName = Path.GetFileName(imageFile.FileName)
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error while processing image download: {ex.Message}");
+                throw;
+            }
+        }
+
+
+
+        public async Task UpdateImgDescAsync(string imageId, string description)
+        {
+            _logger.LogInformation("ImageService: UpdateImgDescAsync is reached.");
+
+            var image = await _imageRepository.GetByIdAsync(imageId);
+
+            if (image != null)
+            {
+                _logger.LogInformation("ImageService: Updating description.");
+                image.Description = description;
+                await _imageRepository.UpdateImageAsync(image);
+                _logger.LogInformation("ImageService: Image updated successfully.");
+            }
+            else
+            {
+                _logger.LogWarning("ImageService: Image not found.");
+            }
+        }
+
+
+
+
+
+
+
+
     }
+
 }
+
+
+
+

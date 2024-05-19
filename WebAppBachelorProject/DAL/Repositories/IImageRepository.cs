@@ -14,11 +14,13 @@ namespace WebAppBachelorProject.DAL.Repositories
 
         Task<IEnumerable<ImageModel>> GetByUser(string userId);
 
-        Task<bool> UpdateImagePath(string imageId, string path);
-
         Task<bool> Delete(string imageId);
 
-        public IQueryable<ImageModel> GetByUserQueryable(string userId); 
+        public IQueryable<ImageModel> GetByUserQueryable(string userId);
+
+        Task<ImageModel> GetByIdAsync(string imageId);
+
+        Task UpdateImageAsync(ImageModel image);
 
     }
 }

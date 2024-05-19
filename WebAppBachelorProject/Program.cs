@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using WebAppBachelorProject.Areas.Identity.Data;
@@ -33,6 +34,7 @@ builder.Services.AddTransient<IImageProcessingService, ImageProcessingService>()
 
 
 builder.Services.AddControllersWithViews();
+
 
 builder.Services.AddScoped<IImageRepository, ImageRepository>();
 builder.Services.AddScoped<IExternalApiService, ExternalApiService>();

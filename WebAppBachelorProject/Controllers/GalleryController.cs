@@ -6,10 +6,12 @@ using System.Security.Claims;
 using WebAppBachelorProject.DAL.Context;
 using WebAppBachelorProject.DAL.Repositories;
 using WebAppBachelorProject.Models;
+using WebAppBachelorProject.Services;
 using Image = WebAppBachelorProject.Models.Image;
 
 namespace WebAppBachelorProject.Controllers
 {
+    [Authorize]
     public class GalleryController : Controller
 
 
@@ -18,13 +20,20 @@ namespace WebAppBachelorProject.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IImageRepository _imageRepository;
         private readonly ILogger<GalleryController> _logger;
+        private readonly IImageService _imageService;
 
-        public GalleryController(ApplicationDbContext context, IImageRepository imageRepository,
-            ILogger<GalleryController> logger)
+
+        public GalleryController(
+            ApplicationDbContext context, 
+            IImageRepository imageRepository,
+            ILogger<GalleryController> logger, 
+            IImageService imageService)
         {
             _context = context;
             _imageRepository = imageRepository;
             _logger = logger;
+            _imageService = imageService;
+
         }
 
 
@@ -36,6 +45,7 @@ namespace WebAppBachelorProject.Controllers
             string searchString,
             int? pageNumber
         )
+
         {
             // Retrieve the user ID from the current user claims
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -90,13 +100,18 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-
+        [Authorize]
         public IActionResult DownloadImage(string imagePath)
         {
             if (string.IsNullOrEmpty(imagePath))
             {
 
                 return BadRequest("Image path is not specified.");
+            }
+
+            if (imagePath.StartsWith("/"))
+            {
+                imagePath = imagePath.TrimStart('/');
             }
 
             _logger.LogInformation($"Imagepath: {imagePath}"); 
@@ -113,6 +128,56 @@ namespace WebAppBachelorProject.Controllers
             var fileBytes = System.IO.File.ReadAllBytes(path);
             return File(fileBytes, "application/octet-stream", fileName);
         }
+
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UpdateImageDescription(UpdateImageDescriptionRequest request)
+        {
+            _logger.LogInformation("GalleryController: UpdateImageDescription is reached.");
+
+            if (request == null)
+            {
+                _logger.LogWarning("Empty request received.");
+                return NotFound("Empty request.");
+            }
+
+            _logger.LogInformation($"Description: {request.Description}");
+            _logger.LogInformation($"ImageId: {request.ImageId}");
+
+            var image = await _imageRepository.GetByIdAsync(request.ImageId);
+
+            if (image == null)
+            {
+                _logger.LogWarning($"GalleryController: Image not found: {request.ImageId}");
+                return NotFound("GalleryController: Image not found.");
+            }
+
+            try
+            {
+                await _imageService.UpdateImgDescAsync(request.ImageId, request.Description);
+                _logger.LogInformation("GalleryController: Returning to index");
+                return RedirectToAction("Index");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "An error occurred while updating the image description.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+
+
+        //THIS NEEDS TO BE UNDER MODELS!!!
+        public class UpdateImageDescriptionRequest
+        {
+            public string ImageId { get; set; }
+            public string Description { get; set; }
+        }
+
+
+
+
 
 
 
