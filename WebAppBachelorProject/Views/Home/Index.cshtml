@@ -11,6 +11,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Home</title>
         <link rel="stylesheet" href="css/Home.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+
     </head>
     
     
@@ -59,7 +61,9 @@
         <button type="button" class="collapsible" id="collapsible" hidden>Options &#10095;</button>
 
 
-        <div id="selectModel" class="form-floating" hidden>
+        <button type="button" class="collapsible" id="collapsible" hidden>Options &#10095;</button>
+
+        <div id="selectModel" class="form-floating col-4" hidden>
             <!--Description-->
             <select name="descModel" id="descModel" class="form-select" aria-label="Description model select">
                 <option value="ImageAble" selected>ImageAble</option>
@@ -70,7 +74,7 @@
 
             <br />
 
-            <div id="customEndpointDiv" class="input-group" hidden>
+            <div id="customEndpointDiv" class="input-group col-4" hidden>
                 <br />
                 <span class="input-group-text">Endpoint</span>
                 <input class="form-control" type="text" id="customEndpointInput" placeholder="E.g. http://hostname.123123.northeurope.azurecontainer.io:5000/predict" />
@@ -80,12 +84,12 @@
             <br />
 
             <div id="chatGptEndpoint" hidden>
-                <div class="input-group mb-3">
+                <div class="input-group mb-3 col-4">
                     <span class="input-group-text">API Key</span>
                     <input class="form-control" type="text" id="chatGptApiKeyInput" placeholder="sk-proj-5UnlbkFCRN8ZXjLeDO1AT3BlbkF..." />
                 </div>
 
-                <div class="input-group mb-3">
+                <div class="input-group mb-3 col-4">
                     <span class="input-group-text">Custom Prompt</span>
                     <textarea class="form-control" id="chatGptPrompt" placeholder="Create a description for the following image. (Default)" cols="30" rows="5"></textarea>
                 </div>
@@ -95,14 +99,14 @@
         <br />
 
         <!--Evaluation-->
-        <div id="evaluationModel" class="form-floating" hidden>
+        <div id="evaluationModel" class="form-floating col-4" hidden>
             <select name="evalModel" id="evalModel" class="form-select" aria-label="Evaluation model select">
                 <option value="NCAM" selected>NCAM</option>
                 <option value="N/A" disabled>N/A</option>
             </select>
             <label for="evalModel">Select Evaluation Model</label>
-
         </div>
+
 
 
 
@@ -376,7 +380,6 @@
                     var files = file_Input.files; //NEW
 
                     // Clear existing previews
-                    //preview.innerHTML = '';
                     previewTable.innerHTML = '';
 
 
@@ -389,7 +392,32 @@
                     descriptionHeaderCell.innerHTML = "Description";
 
                     let evaluationHeaderCell = headers.insertCell(2);
-                    evaluationHeaderCell.innerHTML = "Accessibility score ";
+                    evaluationHeaderCell.innerHTML = `
+                    Accessibility score
+                    <span id="evalTooltip" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true"
+                    title="
+                        <ol>
+                        <li>The description should be succinct. </li>
+                        <li>Colors should not be specified unless it’s significant. </li>
+                        <li>New concepts or terms should not be introduced.</li>
+                        <li>Start with a high-level context and drill down to details to enhance understanding. </li>
+                        <li>Use active verbs in the present tense. </li>
+                        <li>Ensure spelling, grammar, and punctuation are correct.</li>
+                        <li>Symbols should be written out properly.</li>
+                        <li>Use vocabulary that adds meaning, e.g., ‘map’ instead of an image. </li>
+                        <li>Explain physical appearance and actions rather than emotions and possible intentions. </li>
+                        <li>Do not interpret or analyze the material; allow the reader to form their own opinions.</li>
+                    </ol>
+                    ">
+                        <i class="fas fa-info-circle"></i>
+                    </span>`;
+
+                    //Triggering tooltip. Code from bootstrap: 
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl)
+                    })
+
 
                     let buttonHeaderCell = headers.insertCell(3);
                     buttonHeaderCell.innerHTML = "";
@@ -491,13 +519,13 @@
                                     })
                                         .then(response => response.json())
                                         .then(data => {
-                                            console.log('Success:', data);
-                                            displayDescription(data.descriptions);
-                                            generateEvaluation();
-                                            messageOutput.innerHTML = "Description & Accessibility score generated successfully";
-                                            displayDownloadButtons();
-                                            displayUpdateDescriptionButtons();
-                                            uploadButton.hidden = false;
+                                            console.log('Success:', data); //When finsihed, doing this in order:
+                                            displayDescription(data.descriptions); //Run function to display all the description
+                                            generateEvaluation(); //Start the generate evaluation. 
+                                            messageOutput.innerHTML = "Description & Accessibility-Score generated successfully"; //Output to UI
+                                            displayDownloadButtons(); //Show the download button for each image.
+                                            displayUpdateDescriptionButtons(); //Show the update button for each image. 
+                                            uploadButton.hidden = false; //Show the SaveAll button. 
                                         })
                                         .catch((error) => {
                                             console.error('Error:', error);
@@ -714,7 +742,7 @@
                         var numericValue = parseFloat(evaluation[i]);
 
                         if (!isNaN(numericValue)) {
-                            var formattedValue = numericValue.toFixed(2);
+                            var formattedValue = numericValue.toFixed(3)
 
                             //Append the formatted value to the existing results
                             formattedResults += formattedValue + '<br>';
