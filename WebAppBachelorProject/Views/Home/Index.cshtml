@@ -56,48 +56,69 @@
 
 
 
-            <button type="button" class="collapsible" id="collapsible" hidden>Options &#10095;</button>
-            <div id="selectModel" hidden>
-                <!--Description-->
-                <label for="descModel">Select Description Model</label>
-                <select name="descModel" id="descModel">
-                    <option value="ImageAble" selected>ImageAble</option>
-                    <option value="ChatGPT">Gpt-4-Turbo (Vision)</option> 
-                    <option value="Custom">Custom Endpoint</option>
-                </select>
+        <button type="button" class="collapsible" id="collapsible" hidden>Options &#10095;</button>
+
+
+        <div id="selectModel" class="form-floating" hidden>
+            <!--Description-->
+            <select name="descModel" id="descModel" class="form-select" aria-label="Description model select">
+                <option value="ImageAble" selected>ImageAble</option>
+                <option value="ChatGPT">Gpt-4-Turbo (Vision)</option>
+                <option value="Custom">Custom Endpoint</option>
+            </select>
+            <label for="descModel">Select Description model</label>
+
+            <br />
+
+            <div id="customEndpointDiv" class="input-group" hidden>
                 <br />
-
-                <div id="customEndpointDiv" hidden>
-                    <br />
-                    <label for="customEndpoint">Endpoint:</label>
-                    <input type="text" id="customEndpointInput" placeholder="E.g. http://hostname.123123.northeurope.azurecontainer.io:5000/predict" style="width: 500px;" />
-                    <input type="text" id="customAPI" placeholder="API KEY (optional) " style="width: 250px;" />
-                </div>
-
-                <div id="chatGptEndpoint" hidden>
-                    <br />
-                    <label for="chatGptApiKeyInput">API key:</label>
-                    <input type="text" id="chatGptApiKeyInput" placeholder="sk-proj-5UnlbkFCRN8ZXjLeDO1AT3BlbkF..."  />
-                    <br />
-                    <label for="chatGptPrompt">Custom prompt </label>
-                    <textarea id="chatGptPrompt" placeholder="Create a description for the following image. (default)" cols="20" rows="3"></textarea>
-                </div>
-
-                <br />
-                <!--Evaluation-->
-                <label for="evalModel">Select Evaluation Model</label>
-                <select name="evalModel" id="evalModel">
-                    <option value="NCAM" selected>NCAM</option>
-                    <option value="N/A" disabled>N/A</option>
-                </select>
-
-
-
+                <span class="input-group-text">Endpoint</span>
+                <input class="form-control" type="text" id="customEndpointInput" placeholder="E.g. http://hostname.123123.northeurope.azurecontainer.io:5000/predict" />
+                <input class="form-control" type="text" id="customAPI" placeholder="API KEY (optional)" />
             </div>
 
+            <br />
+
+            <div id="chatGptEndpoint" hidden>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">API Key</span>
+                    <input class="form-control" type="text" id="chatGptApiKeyInput" placeholder="sk-proj-5UnlbkFCRN8ZXjLeDO1AT3BlbkF..." />
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Custom Prompt</span>
+                    <textarea class="form-control" id="chatGptPrompt" placeholder="Create a description for the following image. (Default)" cols="30" rows="5"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <br />
+
+        <!--Evaluation-->
+        <div id="evaluationModel" class="form-floating" hidden>
+            <select name="evalModel" id="evalModel" class="form-select" aria-label="Evaluation model select">
+                <option value="NCAM" selected>NCAM</option>
+                <option value="N/A" disabled>N/A</option>
+            </select>
+            <label for="evalModel">Select Evaluation Model</label>
+
+        </div>
 
 
-            <div id="GenerateButtons"></div>
+
+    
+
+
+        <div id="GenerateButtons" class="d-flex justify-content-center mt-3">
+            <button id="generateButton" hidden class="generateButton hidden">Generate Description</button>
+            <button id="uploadButton" hidden class="saveAllButton hidden">Save All To Gallery</button>
+        </div>
+
+        <div id="messageOutputDiv" class="d-flex justify-content-center mt-3 fs-3 text ">
+            <span id="messageOutput"></span>
+        </div>
+
+        <!-----<div id="GenerateButtons"></div>---->
 
             <table id="previewTable" class="table"></table>
             <div id="informationOutput"></div>
@@ -200,13 +221,29 @@
         <script>
 
             document.addEventListener("DOMContentLoaded", function () {
+
                 var dropArea = document.getElementById("drop-area");
                 var file_Input = document.getElementById("file_input"); //NEW
                 var previewTable = document.getElementById("previewTable");
                 var descriptionSelect = document.getElementById("descModel");
                 var collapsibleButton = document.getElementById("collapsible");
                 var customEndpointInput = document.getElementById('customEndpointDiv'); 
-                var chatGptApiDiv = document.getElementById('chatGptEndpoint')
+                var chatGptApiDiv = document.getElementById('chatGptEndpoint');
+                var messageOutput = document.getElementById('messageOutput');
+
+
+
+                //Buttons:
+                var generateButton = document.getElementById('generateButton');
+                generateButton.addEventListener('click', handleGenerateButtonClick);
+
+                var uploadButton = document.getElementById('uploadButton');
+                uploadButton.addEventListener('click', handleUploadButtonClick);
+
+
+
+
+
 
                 var imageData = null;
 
@@ -215,7 +252,16 @@
                 //ALSO SHOWING THE COLLAPSE (OPTIONS)
                 file_Input.addEventListener("change", function () {
                     previewImage();
-                    document.getElementById("collapsible").hidden = false;
+                    document.getElementById("collapsible").hidden = false; //Showing the "options".
+                    generateButton.hidden = false; //Showing the generate button
+                    uploadButton.hidden = true;
+
+                    if (file_Input.length == 0) {
+                        messageOutput = "";
+                    }
+
+                    //
+
                 });
 
 
@@ -224,78 +270,61 @@
                 collapsibleButton.addEventListener('click', function(){
                     var selectModelDiv = document.getElementById("selectModel");
                     selectModelDiv.hidden = !selectModelDiv.hidden;
+
+                    var evaluationModelDiv = document.getElementById("evaluationModel");
+                    evaluationModelDiv.hidden = !evaluationModelDiv.hidden;
+
+
                 });
 
+                descriptionSelect.addEventListener('change', function () {
+                    chatGptApiDiv.hidden = descriptionSelect.value !== 'ChatGPT';
+                    customEndpointInput.hidden = descriptionSelect.value !== 'Custom';
+                })
 
 
 
-                var ButtonManager = {
-                    generateButtonContainer: null,
 
-                    init: function () {
-                        this.generateButtonContainer = document.getElementById("GenerateButtons");
-                        this.generateButtonContainer.innerHTML = '';
-                        this.generateButtonContainer.classList.add('d-flex', 'justify-content-center', 'mt-3');
-                    },
+                generateButton.addEventListener('change', function () {
 
-                    //https://stackoverflow.com/questions/1085801/get-selected-value-in-dropdown-list-using-javascript
+                    if (descriptionSelect.value === "ImageAble") {
+                        sendMultipleImageData('/Image/GetMultipleImages');
+                    }
 
-                    createGenerateButton: function () {
-                        var sendButton = document.createElement('button');
-                        sendButton.innerText = 'Generate Description';
-                        sendButton.classList.add('generateButton');
+                    if (descriptionSelect.value === "ChatGPT") {
+
+                        chatGptApiKey = document.getElementById("chatGptApiKeyInput").value;
+                        sendMultipleImageData('/Image/DescFromChatGPT', chatGptApiKey);
+                    }
 
 
-                        descriptionSelect.addEventListener('change', function () {
+                    if (descriptionSelect.value === "Custom") {
 
-                            chatGptApiDiv.hidden = descriptionSelect.value !== 'ChatGPT';
+                        customEndpointUrl = document.getElementById("customEndpointInput").value;
+                        sendMultipleImageData('/Image/Custom', "", customEndpointUrl);
+                    }
 
-                            customEndpointInput.hidden = descriptionSelect.value !== 'Custom';
-
-                        })
-
-                        sendButton.addEventListener('click', function () {
-
-                            if (descriptionSelect.value === "ImageAble") {
-                                sendMultipleImageData('/Image/GetMultipleImages');
-                            }
-
-                            if (descriptionSelect.value === "ChatGPT") {
-
-                                chatGptApiKey = document.getElementById("chatGptApiKeyInput").value; 
-
-                                sendMultipleImageData('/Image/DescFromChatGPT', chatGptApiKey);
-                            }
-
-                            
-                            if (descriptionSelect.value === "Custom") {
-
-                                 customEndpointUrl = document.getElementById("customEndpointInput").value; 
-
-                                sendMultipleImageData('/Image/Custom',"",customEndpointUrl);
-                            }
-                            
-                        });
+                })
 
 
-                        this.generateButtonContainer.appendChild(sendButton);
-                    },
 
-                    createUploadButton: function () {
-                        var uploadButton = document.createElement('button');
-                        uploadButton.innerText = 'Save All To Gallery';
-                        uploadButton.classList.add('saveAllButton');
-                        uploadButton.addEventListener('click', function () {
-                            saveAllImagesToGallery();
-                        });
+                function handleGenerateButtonClick() {
+                    if (descriptionSelect.value === "ImageAble") {
+                        sendMultipleImageData('/Image/GetMultipleImages');
+                    } else if (descriptionSelect.value === "ChatGPT") {
+                        var chatGptApiKey = document.getElementById("chatGptApiKeyInput").value;
+                        sendMultipleImageData('/Image/DescFromChatGPT', chatGptApiKey);
+                    } else if (descriptionSelect.value === "Custom") {
+                        var customEndpointUrl = document.getElementById("customEndpointInput").value;
+                        sendMultipleImageData('/Image/Custom', "", customEndpointUrl);
+                    }
+                    //uploadButton.hidden = false; //Showing the upload
+                }
 
-                        this.generateButtonContainer.appendChild(uploadButton);
-                    },
-
-                };
-
-                // Initialize the ButtonManager
-                ButtonManager.init();
+                //Calling the save when clicked. 
+                function handleUploadButtonClick() {
+                    saveAllImagesToGallery();
+                }
 
 
 
@@ -396,8 +425,6 @@
                                     if (index === files.length - 1) {
 
                                         document.getElementById("exampleCards").hidden = true;
-
-                                        ButtonManager.createGenerateButton(); //This in another function to avoid duplicates...
                                     }
                                 };
                             })(i);
@@ -427,6 +454,7 @@
                     var customPrompt = document.getElementById('chatGptPrompt').value;
                     var customEndpoint = document.getElementById('customEndpointInput').value; 
 
+                    
 
                     if (imageFiles && imageFiles.length > 0) {
                         var imageDataArray = [];
@@ -466,13 +494,14 @@
                                             console.log('Success:', data);
                                             displayDescription(data.descriptions);
                                             generateEvaluation();
+                                            messageOutput.innerHTML = "Description & Accessibility score generated successfully";
                                             displayDownloadButtons();
                                             displayUpdateDescriptionButtons();
-                                            ButtonManager.createUploadButton();
+                                            uploadButton.hidden = false;
                                         })
                                         .catch((error) => {
                                             console.error('Error:', error);
-                                            document.getElementById('informationOutput').innerHTML = "Error: Failed to send image data. Please try another model.";
+                                            messageOutput.innerHTML = "Error: Failed to send image data. Please try another model."; 
                                         });
                                 }
                             };
@@ -480,8 +509,9 @@
                             reader.readAsDataURL(file);
                         }
                     } else {
+                        messageOutput.innerHTML = "Please upload an image.";
                         console.error('No image data to send');
-                        document.getElementById('informationOutput').innerHTML = "Please upload an image.";
+                        
                     }
                 }
 
@@ -569,13 +599,16 @@
                         })
                         .then(data => {
                             console.log('Success:', data);
+                                messageOutput.innerHTML="Images saved to gallery successfully."
                         })
                         .catch(error => {
                             if (error !== 'Unauthorized') {
+                                messageOutput.innerHTML = "Please login." //This is not going to show anyways. 
                                 console.error('Error:', error);
                             }
                         });
                     } else {
+                        messageOutput.innerHTML = "Error occurred. See if you selcted images correctly or try again later." .
                         console.error('No files selected or mismatch between files and table rows.');
                     }
                 }
@@ -759,8 +792,11 @@
                             document.body.appendChild(a);
                             a.click();
                             a.remove();
+                            messageOutput.innerHTML = "Image downloaded with metadata"; 
                         })
-                        .catch(error => console.error('Error downloading the image:', error));
+                        .catch(
+                                error => console.error('Error downloading the image:', error)
+                               );
                 }
 
 
@@ -841,7 +877,7 @@
 
                 function createUpdateButtonHTML(row) {
                     const button = document.createElement('button');
-                    button.textContent = 'Change description';
+                    button.textContent = 'Edit Description';
                     button.className = 'update-btn';
                     button.classList.add('btn','btn-dark','mt-2')
                     button.setAttribute('data-bs-toggle', 'modal');
