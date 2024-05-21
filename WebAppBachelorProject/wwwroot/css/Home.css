@@ -95,6 +95,38 @@
     opacity: 1;
 }
 
+@media only screen and (max-width: 1024px) and (max-height: 768px) {
+    .card-img-top{
+        max-height:150px;
+    }
+}
+
+@media only screen and (min-width: 1024px) and (max-height: 768px) {
+    .card-img-top {
+        max-height: 200px;
+    }
+
+}
+
+@media screen and (max-width: 768px)  {
+    .card-img-top {
+        max-height: 120px;
+    }
+}
+
+@media only screen and (min-width: 768) and (max-width: 1024px) {
+    .card-img-top {
+        max-height: 180px;
+    }
+}
+
+@media  screen and (min-width: 1024px){
+    .card-img-top {
+        max-height: 250px;
+    }
+
+}
+
 .dark-container {
     background-color: #08090A; /* Dark background color */
     color: white;
