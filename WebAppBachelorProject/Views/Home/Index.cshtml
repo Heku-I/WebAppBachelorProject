@@ -49,12 +49,16 @@
                                 <div class="d-flex justify-content-center align-items-center mt-5">
                                 <input type="file" id="file_input" name="uploadfile" accept="image/*" class="inputfile" data-multiple-caption="{count} files selected" multiple />
                                 <label for="file_input">Choose image to upload...</label>
+
                                 </div>
                             </dd>
                         </div>
                     </dt>
                 </dl>
-            </form> 
+            </form>
+
+
+
 
 
 
@@ -118,9 +122,16 @@
             <button id="uploadButton" hidden class="saveAllButton hidden">Save All To Gallery</button>
         </div>
 
+        <div class="d-flex justify-content-center">
+            <div id="loadingSpinner" class="spinner-border" role="status" hidden>
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
         <div id="messageOutputDiv" class="d-flex justify-content-center mt-3 fs-3 text ">
             <span id="messageOutput"></span>
         </div>
+
 
         <!-----<div id="GenerateButtons"></div>---->
 
@@ -234,6 +245,7 @@
                 var customEndpointInput = document.getElementById('customEndpointDiv'); 
                 var chatGptApiDiv = document.getElementById('chatGptEndpoint');
                 var messageOutput = document.getElementById('messageOutput');
+                var loading = document.getElementById('loadingSpinner');
 
 
 
@@ -377,12 +389,13 @@
                  */
 
                 function previewImage() {
+                    loading.hidden = false;
                     var files = file_Input.files; //NEW
 
                     // Clear existing previews
                     previewTable.innerHTML = '';
 
-
+                    //Inserting the headers at row 0:
                     let headers = previewTable.insertRow(0);
 
                     let imageHeaderCell = headers.insertCell(0);
@@ -391,6 +404,7 @@
                     let descriptionHeaderCell = headers.insertCell(1);
                     descriptionHeaderCell.innerHTML = "Description";
 
+                    //This evaluation header is more special. Here we add the tooltip. Code from bootstrap. 
                     let evaluationHeaderCell = headers.insertCell(2);
                     evaluationHeaderCell.innerHTML = `
                     Accessibility score
@@ -418,7 +432,7 @@
                         return new bootstrap.Tooltip(tooltipTriggerEl)
                     })
 
-
+                    //The last (fourth) cell is empty. Buttons are below this cell. 
                     let buttonHeaderCell = headers.insertCell(3);
                     buttonHeaderCell.innerHTML = "";
 
@@ -438,14 +452,14 @@
                                     img.src = e.target.result;
                                     img.classList.add('img-fluid', 'rounded');
 
-                                    //Image size
+                                    //Image size. Might change this. 
                                     img.style.maxWidth = '25%';
                                     img.style.height = 'auto';
 
 
                                     let newRow = previewTable.insertRow(-1);
                                     newRow.insertCell(0).innerHTML = img.outerHTML;
-                                    newRow.insertCell(1).innerHTML = ""; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
+                                    newRow.insertCell(1).innerHTML = ""; //Placeholder for buttons (Not sure what to do here yet.) Maybe add some effects, maybe 
                                     newRow.insertCell(2).innerHTML = ""; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
                                     newRow.insertCell(3).innerHTML = ""; //Placeholder for buttons (Not sure what to do here yet.) Maybe add something cool.
  
@@ -453,6 +467,7 @@
                                     if (index === files.length - 1) {
 
                                         document.getElementById("exampleCards").hidden = true;
+                                        loading.hidden = "true";
                                     }
                                 };
                             })(i);
@@ -461,6 +476,7 @@
                             reader.readAsDataURL(file);
                         }
                     }
+                    loading.hidden = true;
                 }
 
 
@@ -480,13 +496,20 @@
                 function sendMultipleImageData(apiUrl, apiKey = null, customEndpoint = null) {
                     var imageFiles = file_Input.files;
                     var customPrompt = document.getElementById('chatGptPrompt').value;
-                    var customEndpoint = document.getElementById('customEndpointInput').value; 
+                    var customEndpoint = document.getElementById('customEndpointInput').value;
 
-                    
 
+                    if (!imageFiles || imageFiles.length === 0) {
+                        messageOutput.innerHTML = "Please upload images before clicking generate.";
+                        console.error('No image data to send');
+                        return;
+                    }
+
+                    //Checking if there are any image files selected
                     if (imageFiles && imageFiles.length > 0) {
                         var imageDataArray = [];
 
+                        loading.hidden = false
                         for (var i = 0; i < imageFiles.length; i++) {
                             var reader = new FileReader();
                             var file = imageFiles[i];
@@ -496,6 +519,7 @@
                                 imageDataArray.push(base64String);
 
                                 if (imageDataArray.length === imageFiles.length) {
+                                   
                                     var jsonData = { 
                                         imageBase64Array: imageDataArray,
                                         prompt: customPrompt 
@@ -506,10 +530,10 @@
                                     };
 
                                     if (apiKey) {
-                                        headers['ApiKey'] = apiKey; 
+                                        headers['ApiKey'] = apiKey; //This if for the chatGPT-model
                                     }
                                     if (customEndpoint) {
-                                        headers['CustomEndpoint'] = customEndpoint; 
+                                        headers['CustomEndpoint'] = customEndpoint;  //This is for the customEndpoint model.
                                     }
 
                                     fetch(apiUrl, {
@@ -522,7 +546,6 @@
                                             console.log('Success:', data); //When finsihed, doing this in order:
                                             displayDescription(data.descriptions); //Run function to display all the description
                                             generateEvaluation(); //Start the generate evaluation. 
-                                            messageOutput.innerHTML = "Description & Accessibility-Score generated successfully"; //Output to UI
                                             displayDownloadButtons(); //Show the download button for each image.
                                             displayUpdateDescriptionButtons(); //Show the update button for each image. 
                                             uploadButton.hidden = false; //Show the SaveAll button. 
@@ -537,6 +560,7 @@
                             reader.readAsDataURL(file);
                         }
                     } else {
+                        loading.hidden = true;
                         messageOutput.innerHTML = "Please upload an image.";
                         console.error('No image data to send');
                         
@@ -687,8 +711,10 @@
                             })
                             .catch((error) => {
                                 console.error('Error:', error);
+
                             });
                     } else {
+                        loading.hidden = true;
                         console.error('No description data to send');
                     }
                 }
@@ -737,7 +763,8 @@
                     var columnIndex = 2; 
 
                     var formattedResults = '';
-
+                    loading.hidden = true;
+                    messageOutput.innerHTML = "Description & Accessibility-Score generated successfully"; //Output to UI
                     for (var i = 0; i < evaluation.length; i++) {
                         var numericValue = parseFloat(evaluation[i]);
 
@@ -758,7 +785,9 @@
                                     formattedResults = '';
 
                                     rowIndex++;
+
                                 } else {
+                                    loading.hidden = true;
                                     console.error("Row not found:", rowIndex);
                                 }
                             }
