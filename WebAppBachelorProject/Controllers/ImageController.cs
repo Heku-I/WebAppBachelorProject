@@ -54,19 +54,16 @@ namespace WebAppBachelorProject.Controllers
         {
             _logger.LogInformation("ImageController: GetMultipleImages has been called.");
 
-
             if (request == null || request.ImageBase64Array == null || request.ImageBase64Array.Count == 0)
             {
                 return BadRequest("Invalid request.");
             }
-
             var result = await _imageProcessingService.ProcessMultipleImagesAsync(request.ImageBase64Array);
 
             if (!result.Success)
             {
                 return BadRequest(result.Message);
             }
-
             return Ok(new { Descriptions = result.Descriptions });
         }
 
@@ -79,19 +76,15 @@ namespace WebAppBachelorProject.Controllers
             {
                 return BadRequest("Invalid request.");
             }
-
             if (string.IsNullOrEmpty(apiKey))
             {
                 return BadRequest("API key is necessary. Please enter an API key.");
             }
-
             var result = await _imageProcessingService.ProcessImagesWithChatGPTAsync(request.ImageBase64Array, request.Prompt, apiKey);
-
             if (!result.Success)
             {
                 return BadRequest(result.Message);
             }
-
             return Ok(new { Descriptions = result.Descriptions });
         }
 
@@ -121,12 +114,6 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-
-        /*
-         * 
-         * New ones
-         */
-
         /// <summary>
         /// Receives an evaluation request and processes it to return predictions. This method logs the incoming request,
         /// sends it to a Docker-based service for prediction, and then returns the predictions as a response.
@@ -137,6 +124,12 @@ namespace WebAppBachelorProject.Controllers
         [HttpPost("GetEval")]
         public async Task<IActionResult> GetEvaluation([FromBody] EvaluationRequest request)
         {
+
+            if (request == null || request.description == null || request.description.Count == 0)
+            {
+                return BadRequest("Invalid request.");
+            }
+
             _logger.LogInformation("ImageController: GetEvaluation has been called.");
             return await _imageProcessingService.GetEvaluation(request);
         }
@@ -157,8 +150,6 @@ namespace WebAppBachelorProject.Controllers
         /// <param name="descriptions">Descriptions for each image file. Passed as form data named "descriptions"</param>
         /// <param name="evaluations">Evaluations for each description. Passed as form data named "evaluations"</param>
         /// <returns>indication of success or failure of the image saving process.</returns>
-        /*NEW ONES:
-        */
         [Authorize]
         [HttpPost("SaveImage")]
         public async Task<IActionResult> SaveImageToFolder(
@@ -167,6 +158,27 @@ namespace WebAppBachelorProject.Controllers
             [FromForm(Name = "evaluations")] List<string> evaluations)
         {
             _logger.LogInformation("ImageController: SaveImageToFolder has been called.");
+
+            if (imageFiles == null || imageFiles.Count == 0)
+            {
+                return BadRequest("Invalid request.");
+            }
+
+            if (descriptions == null || descriptions.Count == 0)
+            {
+                return BadRequest("Invalid request.");
+            }
+
+            if (evaluations == null || evaluations.Count == 0)
+            {
+                return BadRequest("Invalid request.");
+            }
+
+            if (evaluations.Count != descriptions.Count || evaluations.Count != imageFiles.Count || descriptions.Count != imageFiles.Count)
+            {
+                return BadRequest("Invalid request.");
+            }
+
 
             for (int i = 0; i < imageFiles.Count; i++)
             {
@@ -191,6 +203,7 @@ namespace WebAppBachelorProject.Controllers
 
         //PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions
         //USING IMAGESHARP - DOCUMENTATION https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Exif.html
+
         [Authorize]
         private async Task<IActionResult> SaveImageToDB(string description, string fileName, string evaluation)
         {
@@ -210,6 +223,7 @@ namespace WebAppBachelorProject.Controllers
                 return Forbid();
             }
 
+            //Creating a relative path so we can easily use it in the client side to get the picture out as well. 
             string relativePath = $"/Uploads/{fileName}";
             var dateCreated = DateTime.Today;
 
@@ -284,6 +298,16 @@ namespace WebAppBachelorProject.Controllers
             _logger.LogInformation("ImageController: DownloadImageWithMetadata is reached.");
 
             if (imageFile == null || imageFile.Length == 0)
+            {
+                return BadRequest("No image file provided.");
+            }
+
+            if (description == null || description.Length == 0)
+            {
+                return BadRequest("No image file provided.");
+            }
+
+            if (evaluation == null || evaluation.Length == 0)
             {
                 return BadRequest("No image file provided.");
             }

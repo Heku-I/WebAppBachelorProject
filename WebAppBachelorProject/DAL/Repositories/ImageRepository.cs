@@ -45,6 +45,8 @@ namespace WebAppBachelorProject.DAL.Repositories
         }
 
 
+
+
         //Get all the images by the user when logged in 
         public async Task<IEnumerable<ImageModel?>> GetByUser(string userId)
         {
@@ -59,7 +61,6 @@ namespace WebAppBachelorProject.DAL.Repositories
             return images;
 
         }
-
 
 
         //Delete an image by its id. 
@@ -79,27 +80,17 @@ namespace WebAppBachelorProject.DAL.Repositories
 
         }
 
+
+
         //Get an image by it's ID. 
-        public async Task<ImageModel?> GetById(string id)
-        {
-
-            var image = await _context.Images.FindAsync(id);
-
-            if (image == null)
-            {
-                return null;
-
-            }
-            return image;
-
-        }
-
         public async Task<ImageModel> GetByIdAsync(string imageId)
         {
             _logger.LogInformation($"ImageRepository: Fetching image by id {imageId}");
             return await _context.Images.FindAsync(imageId);
         }
 
+
+        //Update the image
         public async Task UpdateImageAsync(ImageModel image)
         {
             _logger.LogInformation($"ImageRepository: Updating image {image.ImageId}");
@@ -110,32 +101,14 @@ namespace WebAppBachelorProject.DAL.Repositories
 
 
 
-
-
-        //Update imagepath
-        public async Task<bool> UpdateImagesPath(int imageId, string imagePath)
-        {
-            var images = await _context.Images.FindAsync(imageId);
-            if (images == null) return false;
-
-            images.ImagePath = imagePath;
-
-
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-
-
-
+        //Get by user Queryable
         public IQueryable<ImageModel> GetByUserQueryable(string userId)
         {
             return _context.Images.Where(img => img.UserId == userId);
         }
 
 
-
-
+        //Delete an image ASYNC
         public async Task DeleteImageAsync(ImageModel image)
         {
             _logger.LogInformation($"ImageRepository: Deleting image {image.ImageId}");
@@ -145,21 +118,5 @@ namespace WebAppBachelorProject.DAL.Repositories
         }
 
 
-
-
-
-
-
-
-
-        public Task<bool> UpdateImagePath(string imageId, string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<IEnumerable<ImageModel>> IImageRepository.GetById(string imageId)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

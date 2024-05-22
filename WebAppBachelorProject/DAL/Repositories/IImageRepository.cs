@@ -10,17 +10,15 @@ namespace WebAppBachelorProject.DAL.Repositories
 
         Task<IEnumerable<ImageModel>> GetAll();
 
-        Task<IEnumerable<ImageModel>> GetById(string imageId);
-
         Task<IEnumerable<ImageModel>> GetByUser(string userId);
 
         Task<bool> Delete(string imageId);
 
-        public IQueryable<ImageModel> GetByUserQueryable(string userId);
-
         Task<ImageModel> GetByIdAsync(string imageId);
 
         Task UpdateImageAsync(ImageModel image);
+
+        public IQueryable<ImageModel> GetByUserQueryable(string userId);
 
         Task DeleteImageAsync(ImageModel image);
 
