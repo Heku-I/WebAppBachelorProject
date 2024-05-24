@@ -19,12 +19,6 @@ namespace WebAppBachelorProject.DAL.Context
 
 
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.Ignore<Models.ImageDTO>();
-        }
-
 
     }
 }

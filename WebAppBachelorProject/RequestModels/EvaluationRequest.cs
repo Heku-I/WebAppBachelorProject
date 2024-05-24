@@ -1,4 +1,4 @@
-﻿namespace WebAppBachelorProject.Models
+﻿namespace WebAppBachelorProject.RequestModels
 {
     public class EvaluationRequest
     {

@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WebAppBachelorProject.DAL.Context;
-using WebAppBachelorProject.DAL.Repositories;
-using WebAppBachelorProject.Models;
+using WebAppBachelorProject.RequestModels;
 using WebAppBachelorProject.Services;
 
 namespace WebAppBachelorProject.Controllers
@@ -24,8 +23,8 @@ namespace WebAppBachelorProject.Controllers
 
 
         public ImageController(ILogger<ImageController> logger,
-            ApplicationDbContext context, IConfiguration configuration, 
-            IImageProcessingService imageProcessingService, 
+            ApplicationDbContext context, IConfiguration configuration,
+            IImageProcessingService imageProcessingService,
             IImageService imageService)
         {
             _logger = logger;

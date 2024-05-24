@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using OpenAI_API;
 using System.Net.Http.Headers;
 using static OpenAI_API.Chat.ChatMessage;
-using WebAppBachelorProject.Models;
+using WebAppBachelorProject.RequestModels;
 
 
 namespace WebAppBachelorProject.Services

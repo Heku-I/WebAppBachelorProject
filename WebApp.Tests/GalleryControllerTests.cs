@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore;
 using Moq;
 using System.Security.Claims;
 using WebAppBachelorProject.Controllers;
@@ -13,7 +10,6 @@ using WebAppBachelorProject.DAL.Repositories;
 using ImageModel = WebAppBachelorProject.Models.Image;
 using WebAppBachelorProject.Services;
 using static WebAppBachelorProject.Services.ImageProcessingService;
-using WebAppBachelorProject.Models;
 
 namespace WebApp.Tests
 {
@@ -91,8 +87,20 @@ namespace WebApp.Tests
 
 
 
+        //3: Testing if imagePath is empty
+        [Test]
+        public void DownloadImage_ImagePathIsEmpty_ReturnsBadRequest()
+        {
+            // Arrange
+            string imagePath = string.Empty;
+            // Act
+            var result = _controller.DownloadImage(imagePath);
 
-
+            // Assert
+            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+            var badRequestResult = result as BadRequestObjectResult;
+            Assert.AreEqual("Image path is not specified.", badRequestResult.Value);
+        }
 
 
 

@@ -8,6 +8,7 @@ using ServiceStack;
 using WebAppBachelorProject.Controllers;
 using WebAppBachelorProject.DAL.Context;
 using WebAppBachelorProject.Models;
+using WebAppBachelorProject.RequestModels;
 using WebAppBachelorProject.Services;
 using static WebAppBachelorProject.Services.ImageProcessingService;
 
@@ -328,12 +329,12 @@ namespace WebApp.Tests
         public async Task CustomModelGenerator_ImageBase64ArrayIsNull_ReturnsBadRequest()
         {
             // Arrange
-            var request = new ImageUploadRequest { ImageBase64Array = null };
+            var request = new ImageUploadRequest { ImageBase64Array = null }; //Where Imagebase64Array = null. 
 
             // Act
-            var result = await _controller.CustomModelGenerator(request, "https://somethingsomething.com");
+            var result = await _controller.CustomModelGenerator(request, "https://somethingsomething.com"); //Random endpoint
             // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+            Assert.IsInstanceOf<BadRequestObjectResult>(result); //Does it result in a BadRequest?
         }
 
 

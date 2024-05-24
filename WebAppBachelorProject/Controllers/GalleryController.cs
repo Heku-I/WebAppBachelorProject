@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using WebAppBachelorProject.DAL.Context;
 using WebAppBachelorProject.DAL.Repositories;
-using WebAppBachelorProject.Models;
+using WebAppBachelorProject.HelperModels;
 using WebAppBachelorProject.Services;
 using Image = WebAppBachelorProject.Models.Image;
 
