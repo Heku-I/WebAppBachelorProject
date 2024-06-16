@@ -41,7 +41,7 @@ namespace WebAppBachelorProject.Services
 
                     _logger.LogInformation($"ImageContent: {imageContent}");
 
-                    var response = await client.PostAsync("http://imageablemodel.gaacfthjcffherg4.northeurope.azurecontainer.io:5000/predict", content);
+                    var response = await client.PostAsync("http://imageabledescription.grbmhuh7fhhna7hw.swedencentral.azurecontainer.io:5000/predict", content);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
@@ -145,7 +145,7 @@ namespace WebAppBachelorProject.Services
 
                 using (var content = new StringContent(jsonContent, Encoding.UTF8, "application/json"))
                 {
-                    var response = await _httpClient.PostAsync("http://imageableevaluation.hgcsdzhtarg5f8ca.northeurope.azurecontainer.io:5005/predict", content);
+                    var response = await _httpClient.PostAsync("http://evaluation.ajhkggevcrfqajcn.swedencentral.azurecontainer.io:5005/predict", content);
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();

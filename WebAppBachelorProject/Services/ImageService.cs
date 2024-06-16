@@ -54,8 +54,8 @@ namespace WebAppBachelorProject.Services
         }
 
 
-
-
+        //PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions
+        //USING IMAGESHARP - DOCUMENTATION https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Exif.html
         public ImageSharpImage AddMetadataToImage(IFormFile imageFile, string description, string evaluation)
         {
             _logger.LogInformation("ImageService: AddMetadataToImage has been called.");

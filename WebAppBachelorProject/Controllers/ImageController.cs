@@ -200,8 +200,6 @@ namespace WebAppBachelorProject.Controllers
 
 
 
-        //PROPERTY TAGS (METADATA) https://learn.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-constant-property-item-descriptions
-        //USING IMAGESHARP - DOCUMENTATION https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Exif.html
 
         [Authorize]
         private async Task<IActionResult> SaveImageToDB(string description, string fileName, string evaluation)
